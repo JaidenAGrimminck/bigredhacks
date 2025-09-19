@@ -17,7 +17,8 @@ class User {
     constructor(name, email, id=null) {
         this.name = name;
         this.email = email;
-        this.id = id; // will be set when inserted into DB
+        this.id = id; // will be set when inserted into DB so only if getting data set it.
+        this.sessions = []; // array of session ids
     }
 }
 
@@ -60,6 +61,65 @@ class MongoDBClient {
             console.log("Disconnected from MongoDB");
         } catch (e) {
             console.error(e);
+        }
+    }
+    
+    static async getAllUsers() {
+        try {
+            const database = client.db('bigredhacks');
+            const users = database.collection('users');
+            const allUsers = await users.find({}).toArray();
+            return allUsers;
+        }
+        catch (e) {
+            console.error(e);
+            return [];
+        }
+    }
+
+    /**
+     * Returns a new session ID for the user with the given email.
+     */
+    static async signInUser(email) {
+        try {
+            const database = client.db('bigredhacks');
+            const users = database.collection('users');
+
+            const user = await users.findOne({ email: email });
+            if (!user) return null;
+
+            const sessionId = new ObjectId().toString();
+            await users.updateOne({ email: email }, { $push: { sessions: sessionId } });
+            return sessionId;
+        }
+        catch (e) {
+            console.error(e);
+            return null;
+        }
+    }
+
+    static async signOutUser(sessionId) {
+        try {
+            const database = client.db('bigredhacks');
+            const users = database.collection('users');
+            
+            await users.updateOne({ sessions: sessionId }, { $pull: { sessions: sessionId } });
+        }
+        catch (e) {
+            console.error(e);
+        }
+    }
+
+    static async getUserBySessionId(id) {
+        try {
+            const database = client.db('bigredhacks');
+            const users = database.collection('users');
+            const user = await users.findOne({ sessions: id });
+            return user;
+        }
+        catch (e) {
+            console.error(e);
+            return null;
         }
     }
 

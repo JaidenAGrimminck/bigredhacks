@@ -7,6 +7,10 @@ MongoDBClient.connect().catch(console.error);
 
 const app = express();
 
+app.use(express.json());
+
+app.use('/users', require('./routes/users/users'));
+
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
@@ -18,12 +22,5 @@ app.listen(PORT, () => {
 
     MongoDBClient.onConnect(() => {
         console.log("MongoDB is connected, you can perform database operations now.");
-
-        // try adding one user
-        MongoDBClient.insertUser(new User("John Doe", "john.doe@example.com"));
-
-        promptLLM("Tell me a joke!").then(response => {
-            console.log("LLM Response:", response);
-        }).catch(console.error);
     });
 });
