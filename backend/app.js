@@ -1,6 +1,6 @@
 const express = require('express');
 const { MongoDBClient, User } = require('./db/MongoClient');
-const { promptLLM } = require('./ai/llm');
+const { promptLLM, generateListOfItems } = require('./ai/llm');
 
 // Connect to MongoDB
 MongoDBClient.connect().catch(console.error);
@@ -22,5 +22,11 @@ app.listen(PORT, () => {
 
     MongoDBClient.onConnect(() => {
         console.log("MongoDB is connected, you can perform database operations now.");
+
+        generateListOfItems().then(items => {
+            console.log("Generated items from LLM:", items);
+        }).catch(err => {
+            console.error("Error generating items from LLM:", err);
+        });
     });
 });
