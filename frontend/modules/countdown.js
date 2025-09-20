@@ -16,7 +16,7 @@ export default function Countdown({ onFinish }) {
 
     setTimeout(() => {
         onFinish();
-    }, 4000);
+    }, 100); // TODO: change to 3000
     
     return (
         <div className="w-[100vw] h-[100vh] overflow-hidden">

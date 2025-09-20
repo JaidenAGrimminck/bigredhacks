@@ -53,7 +53,7 @@ async function generateListOfItems() {
     `
     let response = await promptLLM(prompt);
 
-    console.log("Raw LLM response:", response);
+    //console.log("Raw LLM response:", response);
     
     // filter out <think>...<think> tags if they exist
     response = response.replace(/<think>.*?<\/think>/gs, '').trim();

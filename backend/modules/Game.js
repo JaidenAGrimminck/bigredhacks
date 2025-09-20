@@ -1,3 +1,4 @@
+const { generateListOfItems } = require("../ai/llm");
 
 function generateEasyCode() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -13,10 +14,15 @@ class Game {
         this.players = []; // list of user ids of players in the game
         this.playerSockets = {}; // map of user id to websocket
 
+        this.points = {};
+
         this.hostSocket = hostSocket; // websocket of the host
+        this.reestablished = false;
         
         this.code = generateEasyCode(); // 4 letter code for joining the game
         this.state = 'waiting';
+
+        this.items = []; // list of items to find
     }
 
     async startGame() {
@@ -24,10 +30,25 @@ class Game {
         await new Promise(resolve => setTimeout(() => { if (this.hostSocket != null) { resolve(); } }, 100)); // wait till host is back
         console.log("Starting game " + this.code);
         this.state = 'playing';
+
+        for (let player of this.players) {
+            this.points[player] = 0;
+        }
+        
+        // const items = await generateListOfItems();
+        // this.items = items;
+
+        if (this.hostSocket !== null) {
+            this.hostSocket.send(JSON.stringify({
+                type: 'item_data',
+                items: this.items,
+            }));
+        }
     }
 
     reestablishSocket(newSocket) {
         this.hostSocket = newSocket;
+        this.reestablished = true;
     }
 
     connectPlayer(name, socket) {

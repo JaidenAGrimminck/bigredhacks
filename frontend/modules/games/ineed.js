@@ -9,8 +9,7 @@ const freckleFace = Freckle_Face({
 });
 
 // Header Component
-function GameHeader() {
-    const initialTime = Date.now();
+function GameHeader({ initialTime}) {
     const timerRef = React.useRef(null);
 
     React.useEffect(() => {
@@ -83,24 +82,22 @@ function ClockTowerItem() {
 }
 
 // People List Component
-function PeopleList() {
-    const people = [
-        { name: "Smith", rotation: "-rotate-3" },
-        { name: "John", rotation: "rotate-2" },
-        { name: "Emily", rotation: "-rotate-[7deg]" },
-        { name: "Martin", rotation: "rotate-2" }
-    ];
+function PeopleList({ people, points }) {
+    const rotations = ["-rotate-3", "rotate-2", "-rotate-[7deg]", "rotate-2"];
+    // Example people data if none provided
+    if (!people) people = ["Smith", "John", "Emily", "Martin"];
+    if (!points) points = [3, 5, 2, 4];
 
     return (
         <div className="bg-zinc-300 rounded-[50px] p-6 space-y-6 min-w-fit">
             {people.map((person, index) => (
                 <div key={person.name} className="flex items-center space-x-4">
                     <span className="text-2xl md:text-3xl font-normal font-['Freckle_Face'] text-black">
-                        {'3 pts'}
+                        {points[index] || 0} pt{points[index] === 1 ? '' : 's'}
                     </span>
                     <div className="w-10 h-16 md:w-14 md:h-20 outline outline-4 outline-black bg-transparent" />
                     <span className={`text-4xl md:text-6xl font-normal font-['Freckle_Face'] text-black transform ${person.rotation}`}>
-                        {person.name}
+                        {person}
                     </span>
                 </div>
             ))}
@@ -154,11 +151,20 @@ function MysteryItem() {
 }
 
 // Main Component
-export default function INeed() {
+export default function INeed({ leaderboard, gameStart }) {
+    const [people, setPeople] = React.useState(["Smith", "John", "Emily", "Martin"]);
+    const [points, setPoints] = React.useState([3, 5, 2, 4]);
+
+    React.useEffect(() => {
+        console.log(leaderboard)
+        setPeople(leaderboard.map(entry => entry.name));
+        setPoints(leaderboard.map(entry => entry.points));
+    }, [leaderboard]);
+
     return (
         <div className={`min-h-screen bg-white p-4 ${freckleFace.variable}`}>
             <div className="max-w-7xl mx-auto">
-                <GameHeader />
+                <GameHeader initialTime={gameStart}/>
                 
                 <div className="flex flex-row gap-8 justify-around flex-wrap">
 
@@ -177,7 +183,7 @@ export default function INeed() {
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
                     
                     <div className="flex flex-col space-y-8">
-                        <PeopleList />
+                        <PeopleList people={people} points={points} />
                         <MysteryItem />
                     </div>
                 </div>

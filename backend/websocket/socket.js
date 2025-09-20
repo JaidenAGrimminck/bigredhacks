@@ -1,7 +1,7 @@
 const express = require("express");
 const GameManager = require("../modules/Game");
 
-
+const consts = require("../consts");
 
 module.exports = (expressWs) => {
     const router = express.Router();
@@ -9,6 +9,8 @@ module.exports = (expressWs) => {
     expressWs.applyTo(router);
 
     router.ws('/game', (ws, req) => {
+        let gcode = null;
+
         ws.on('message', (msg) => {
             let data = msg;
             try {
@@ -24,9 +26,11 @@ module.exports = (expressWs) => {
                     type: 'established',
                     code: code,
                 }));
+                gcode = code;
             } else if (data.type === 'reestablish') {
                 const { code } = data;
                 const game = GameManager.getGame(code);
+                console.log(data)
                 if (!game) {
                     ws.send(JSON.stringify({
                         type: 'error',
@@ -42,6 +46,53 @@ module.exports = (expressWs) => {
                 }));
 
                 console.log(`Game ${code} reestablished by host`);
+                gcode = code;
+            } else if (data.type === 'leaderboard_request') {
+                const game = GameManager.getGame(gcode);
+                if (game == null) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'Game not found',
+                    }));
+                    return;
+                }
+                
+                let leaderboard = [];
+                for (let player of game.players) {
+                    leaderboard.push({
+                        name: player,
+                        points: game.points[player] || 0,
+                    });
+                }
+                
+                leaderboard.sort((a, b) => b.points - a.points);
+
+                ws.send(JSON.stringify({
+                    type: 'leaderboard_update',
+                    leaderboard: leaderboard,
+                }));
+            } else if (data.type === 'forward_state') {
+                const game = GameManager.getGame(gcode);
+                if (game == null) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'Game not found',
+                    }));
+                    return;
+                }
+
+                console.log("Forwarding state to players: " + data.state);
+
+                for (let player of game.players) {
+                    if (game.playerSockets[player]) {
+                        game.playerSockets[player].send(JSON.stringify({
+                            type: 'switch_to_game',
+                            state: data.state,
+                        }));
+                    }
+                }
+
+                game.state = data.state;
             }
         });
 
@@ -50,9 +101,7 @@ module.exports = (expressWs) => {
         });
 
         ws.on('close', () => {
-            if (GameManager.games[code] == null) {
-                GameManager.games[code].hostSocket = null;
-            }
+            if (gcode == null) return;
 
             console.log('WebSocket connection closed for host');
             // if the host disconnects, give them 10 seconds to reconnect
@@ -60,7 +109,7 @@ module.exports = (expressWs) => {
             setTimeout(() => {
                 // if the host does not reconnect in 10 seconds, delete the game
                 for (let code in GameManager.games) {
-                    if (GameManager.games[code].hostSocket === ws || GameManager.games[code].hostSocket === null) {
+                    if (!GameManager.games[code].reestablished) {
                         GameManager.removeGame(code);
                         console.log(`Game ${code} removed due to host disconnect`);
                         break;
@@ -74,7 +123,7 @@ module.exports = (expressWs) => {
         let gcode = null;
         let name = null;
 
-        ws.on('message', (msg) => {
+        ws.on('message', async (msg) => {
             let data = msg;
             try {
                 data = JSON.parse(msg);
@@ -110,11 +159,49 @@ module.exports = (expressWs) => {
                 ws.send(JSON.stringify({
                     type: 'joined',
                 }));
+
+                if (game.state == 'takephotos') {
+                    ws.send(JSON.stringify({
+                        type: 'switch_to_game',
+                        state: game.state
+                    }));
+                }
             } else if (data.type === 'photo') {
-                const { data } = data; // data is a dataURL
+                const pdata = data; // data is a dataURL
+
+                const name = pdata.name;
+                const photo = pdata.photo; // base64 encoded image
 
                 // PASS THIS TO THE DASHBoARD + PHOTO CLASSIFICATION ENDPOINT
+                console.log("Photo received from " + name);
+                
+                
+                
 
+            } else if (data.type === 'leaderboard_request') {
+                const game = GameManager.getGame(gcode);
+                if (game == null) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'Game not found',
+                    }));
+                    return;
+                }
+                
+                let leaderboard = [];
+                for (let player of game.players) {
+                    leaderboard.push({
+                        name: player,
+                        points: game.points[player] || 0,
+                    });
+                }
+                
+                leaderboard.sort((a, b) => b.points - a.points);
+                
+                ws.send(JSON.stringify({
+                    type: 'leaderboard',
+                    leaderboard: leaderboard,
+                }));
             }
         });
         

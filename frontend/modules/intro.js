@@ -2,9 +2,10 @@
 export default function Intro({
     onFinish, playerNames=[]
 }) {
-    setTimeout(() => {
+
+    const tm = setTimeout(() => {
         onFinish();
-    }, 5000);
+    }, 100); //TODO: change to 10000
 
     return (
         <div className="w-[100vw] h-[100vh] flex flex-col justify-center items-center text-5xl text-black font-['Freckle_Face']">
@@ -25,7 +26,10 @@ export default function Intro({
             <img src="/Logo.png" className="w-1/3 h-1/3 object-contain" />
             </div>
             {/* button in bottom right corner */}
-            <button className="absolute bottom-4 right-4 bg-blue-500 text-white p-2 rounded hover:bg-blue-600 active:bg-blue-700 z-1000" onClick={onFinish}>Skip Intro</button>
+            <button className="absolute bottom-4 right-4 bg-blue-500 text-white p-2 rounded hover:bg-blue-600 active:bg-blue-700 z-1000" onClick={() => {
+                clearTimeout(tm);
+                onFinish();
+            }}>Skip Intro</button>
 
             {/* audio */}
             <audio autoPlay>

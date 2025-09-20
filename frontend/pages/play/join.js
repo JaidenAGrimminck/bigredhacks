@@ -164,7 +164,7 @@ export default function Join() {
                 return;
             } 
 
-            window.location.href = `/play/intro`;
+            window.location.href = `/play/playing?gameid=${encodeURIComponent(code)}`; // redirect to playing page
         }
 
         return (

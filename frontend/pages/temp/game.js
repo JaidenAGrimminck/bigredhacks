@@ -21,7 +21,7 @@ function Wait() {
     );
 }
 
-function PhotoGame({ websocket, startTime }) {
+function PhotoGame({ websocket, startTime, playerName }) {
     const videoPhotoRef = React.useRef(null);
     const galleryRef = React.useRef(null);
     const timerRef = React.useRef(null);
@@ -89,7 +89,8 @@ function PhotoGame({ websocket, startTime }) {
         if (websocket()) {
             websocket().send(JSON.stringify({
                 type: 'photo',
-                data: dataURL,
+                photo: dataURL,
+                name: playerName
             }));
         }
     }
@@ -132,10 +133,11 @@ function PhotoGame({ websocket, startTime }) {
 }
 
 export default function Game() {
-    let testing = true;
-    let state = 'photogame';
+    let testing = false;
+    let [state, setState] = React.useState('wait'); // wait, play
 
-    let socket = null;
+    let [socket, setSocket] = React.useState(null);
+    let [name, setName] = React.useState("");
 
     const f = async () => {
         await new Promise(resolve => setTimeout(resolve, 100)); // wait for next tick to ensure search params are available
@@ -154,10 +156,12 @@ export default function Game() {
             return;
         }
 
+        setName(userID);
+
         // connect to websocket here
         const ws = new WebSocket(`${API_BASE_URL}/ws/player`);
 
-        socket = ws;
+        setSocket(ws);
 
         ws.onopen = () => {
             console.log("WebSocket connection established");
@@ -180,10 +184,10 @@ export default function Game() {
                 state = 'play';
             }
             if (data.type === 'error') {
-                alert(data.message);
+                //alert(data.message);
                 window.location.href = "/temp/join";
             } else if (data.type === 'switch_to_game') {
-                state = data.state;
+                setState(data.state)
             }
         }
         
@@ -200,7 +204,7 @@ export default function Game() {
     return (
         <>
             {state === 'wait' && <Wait />}
-            {state === 'photogame' && <PhotoGame websocket={() => { return socket; }} startTime={Date.now()} />}
+            {state === 'takephotos' && <PhotoGame websocket={() => { return socket; }} startTime={Date.now()} playerName={name} />}
         </>
     );
 }
