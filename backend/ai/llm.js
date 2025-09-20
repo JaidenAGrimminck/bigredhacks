@@ -46,7 +46,7 @@ async function generateListOfItems() {
     The items should be things that are not too dangerous or illegal to find or take a photo of.
     The items should be things that are not too specific to a certain location on Cornell's campus (e.g. the McGraw Tower, the Arts Quad, etc.)
     These items can be more specific to this time of year (it is currently late September, early Fall) - for example, a fallen leaf could be valid items.
-    Be random and creative! Use <think>...</think> tags to think through your reasoning if needed.
+    Be funny, random and creative! Use <think>...</think> tags to think through your reasoning if needed.
     The items should be diverse and not too similar to each other.
     Before finalizing your list, think through the list and make sure it meets all the criteria above, especially if a common YOLOv8 model would be able to recognize it.
     Format the list as a JSON array of strings.

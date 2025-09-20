@@ -22,6 +22,10 @@ class User {
     }
 }
 
+function generateRandomSessionId() {
+    return Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+}
+
 class MongoDBClient {
     static client = client;
     static connected = false;
@@ -82,14 +86,24 @@ class MongoDBClient {
      */
     static async signInUser(email) {
         try {
+            console.log("Signing in user with email:", email);
             const database = client.db('bigredhacks');
             const users = database.collection('users');
 
             const user = await users.findOne({ email: email });
-            if (!user) return null;
+            if (!user) {
+                console.log("No user found with email:", email);
+                return null;
+            }
 
-            const sessionId = new ObjectId().toString();
+            console.log("Found user:", user);
+
+            const sessionId = generateRandomSessionId();
+            console.log("Generated session ID:", sessionId);
+
+            // add session id to user
             await users.updateOne({ email: email }, { $push: { sessions: sessionId } });
+
             return sessionId;
         }
         catch (e) {

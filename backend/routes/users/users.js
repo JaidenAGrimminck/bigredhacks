@@ -10,14 +10,20 @@ function setSessionCookie(res, sessionId) {
     const isProd = process.env.NODE_ENV === 'production'; //test if in production environment
     res.cookie('sessionId', sessionId, {
         httpOnly: true,
-        secure:   isProd,
-        sameSite: 'Strict',
+        secure:   false,//isProd,
+        sameSite: 'Lax',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week should be good enough
     });
 }
 
 // middle man to get user info if session id exists
 router.use(async (req, res, next) => {
+    if (req.cookies == undefined) {
+        req.cookies = {};
+    }
+    if (req.headers == undefined) {
+        req.headers = {};
+    }
     const sessionId = req.headers["x-session-id"] || req.cookies.sessionId;
     if (sessionId) {
         const user = await MongoDBClient.getUserBySessionId(sessionId);
@@ -40,8 +46,8 @@ router.get("/", async (req, res) => {
     }
 });
 
-router.get("/signin", async (req, res) => {
-    const email = req.query.email;
+router.post("/signin", async (req, res) => {
+    const email = req.body.email;
     if (!email) {
         return res.status(400).json({ error: "Email is required" });
     }
@@ -52,18 +58,29 @@ router.get("/signin", async (req, res) => {
     }
 
     setSessionCookie(res, sessionId);
+    console.log("set cookie for session:", sessionId);
+    console.log(req.cookies)
+    // confirm:
+    const cookie = req.cookies.sessionId;
+    if (cookie === sessionId) {
+        console.log("Cookie is set correctly");
+    } else {
+        console.log("Cookie is not set correctly");
+    }
 
     res.json({ success: true });
 });
 
 router.get("/me", (req, res) => {
+    //console.log(req.cookies);
+    //console.log(req)
     if (!req.user) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     res.json(req.user);
 });
 
-router.get("/signout", async (req, res) => {
+router.post("/signout", async (req, res) => {
     if (!req.sessionId) {
         return res.status(400).json({ error: "No active session" });
     }
@@ -73,9 +90,9 @@ router.get("/signout", async (req, res) => {
     res.json({ success: true });
 });
 
-router.get("/signup", async (req, res) => {
-    const email = req.query.email;
-    const name = req.query.name;
+router.post("/signup", async (req, res) => {
+    const email = req.body.email;
+    const name = req.body.name;
     if (!email || !name) {
         return res.status(400).json({ error: "Email and name are required" });
     }
@@ -85,14 +102,19 @@ router.get("/signup", async (req, res) => {
         return res.status(409).json({ error: "User already exists" });
     }
 
-    const newUser = new User(email, name);
+    const newUser = new User(name, email);
     await MongoDBClient.insertUser(newUser);
+
+    await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 1 second to ensure user is inserted
 
     // generate session id
     const sessionId = await MongoDBClient.signInUser(email);
     if (!sessionId) {
+        console.log("Failed to create session for new user:", email);
         return res.status(500).json({ error: "Failed to create session" });
     }
+
+    console.log("New user signed up and signed in:", email);
 
     setSessionCookie(res, sessionId);
 
