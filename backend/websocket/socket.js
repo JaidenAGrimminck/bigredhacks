@@ -50,7 +50,10 @@ module.exports = (expressWs) => {
         });
 
         ws.on('close', () => {
-            GameManager.games[code].hostSocket = null;
+            if (GameManager.games[code] == null) {
+                GameManager.games[code].hostSocket = null;
+            }
+
             console.log('WebSocket connection closed for host');
             // if the host disconnects, give them 10 seconds to reconnect
             // otherwise, delete the game

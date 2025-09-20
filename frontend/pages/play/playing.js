@@ -53,11 +53,18 @@ export default function Playing() {
         f();
     }, []);
 
+    const nextState = () => {
+        if (state === 'intro') {
+            setState('countdown');
+        } else if (state === 'countdown') {
+            setState('play');
+        }
+    }
+
     return (
         <div>
-            {state === 'intro' && <Intro onFinish={() => {}}/>}
-            {state === 'countdown' && <Countdown onFinish={() => {}} />}
-            
+            {state === 'intro' && <Intro playerNames={["jaiden", "test", "abab", "ahliushfdlkasj"]} onFinish={nextState}/>}
+            {state === 'countdown' && <Countdown onFinish={nextState} />}
         </div>
     );
 }
