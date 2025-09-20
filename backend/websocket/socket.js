@@ -110,6 +110,11 @@ module.exports = (expressWs) => {
                 ws.send(JSON.stringify({
                     type: 'joined',
                 }));
+            } else if (data.type === 'photo') {
+                const { data } = data; // data is a dataURL
+
+                // PASS THIS TO THE DASHBoARD + PHOTO CLASSIFICATION ENDPOINT
+
             }
         });
         

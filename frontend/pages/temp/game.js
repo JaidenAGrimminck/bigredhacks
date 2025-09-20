@@ -21,9 +21,10 @@ function Wait() {
     );
 }
 
-function PhotoGame({ websocket }) {
+function PhotoGame({ websocket, startTime }) {
     const videoPhotoRef = React.useRef(null);
     const galleryRef = React.useRef(null);
+    const timerRef = React.useRef(null);
 
     const [photosTaken, setPhotosTaken] = React.useState([]);
 
@@ -49,6 +50,26 @@ function PhotoGame({ websocket }) {
             });
     }, []);
 
+    React.useEffect(() => {
+        // update the timer
+        const interval = setInterval(() => {
+            if (!startTime) return;
+            const now = Date.now();
+            const diff = startTime + 5 * 60 * 1000 - now;
+            if (diff <= 0) {
+                timerRef.current.innerText = "0:00";
+                clearInterval(interval);
+                return;
+            }
+            const minutes = Math.floor(diff / (60 * 1000));
+            const seconds = Math.floor((diff % (60 * 1000)) / 1000);
+            timerRef.current.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+        , 1000);
+        
+        return () => clearInterval(interval);
+    }, [startTime]);
+
     function GalleryItem({ photo }) {
         return (
             <div className="flex flex-col justify-center items-center border border-black p-4 m-2 bg-white">
@@ -65,8 +86,8 @@ function PhotoGame({ websocket }) {
         const dataURL = canvas.toDataURL('image/png');
         setPhotosTaken([...photosTaken, dataURL]);
         console.log("Photo taken");
-        if (websocket) {
-            websocket.send(JSON.stringify({
+        if (websocket()) {
+            websocket().send(JSON.stringify({
                 type: 'photo',
                 data: dataURL,
             }));
@@ -86,7 +107,7 @@ function PhotoGame({ websocket }) {
     return (
         <div className="w-[100vw] h-[100vh] flex flex-col justify-center items-center text-5xl text-black bg-cover bg-center" style={{ backgroundImage: "url('/images/bg.svg')" }}>
             <div className="mb-4 text-center text-2xl p-4 rounded bg-black text-white bg-opacity-50 font-['Freckle_Face']">
-                <h1>You have: <span className="text-red">5:00</span></h1>
+                <h1>You have: <span className="text-red" ref={timerRef}>5:00</span></h1>
             </div>
             <div className="flex flex-col justify-center items-center" ref={videoPhotoRef}>
                 <h1 className="text-white font-['Freckle_Face']">I need...</h1>
@@ -112,7 +133,9 @@ function PhotoGame({ websocket }) {
 
 export default function Game() {
     let testing = true;
-    let state = 'play';
+    let state = 'photogame';
+
+    let socket = null;
 
     const f = async () => {
         await new Promise(resolve => setTimeout(resolve, 100)); // wait for next tick to ensure search params are available
@@ -133,6 +156,8 @@ export default function Game() {
 
         // connect to websocket here
         const ws = new WebSocket(`${API_BASE_URL}/ws/player`);
+
+        socket = ws;
 
         ws.onopen = () => {
             console.log("WebSocket connection established");
@@ -157,6 +182,8 @@ export default function Game() {
             if (data.type === 'error') {
                 alert(data.message);
                 window.location.href = "/temp/join";
+            } else if (data.type === 'switch_to_game') {
+                state = data.state;
             }
         }
         
@@ -173,7 +200,7 @@ export default function Game() {
     return (
         <>
             {state === 'wait' && <Wait />}
-            {state === 'play' && <PhotoGame />}
+            {state === 'photogame' && <PhotoGame websocket={() => { return socket; }} startTime={Date.now()} />}
         </>
     );
 }
