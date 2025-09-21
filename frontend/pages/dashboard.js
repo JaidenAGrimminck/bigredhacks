@@ -62,8 +62,10 @@ export default function Home() {
     }
 
     return (
-        <div className="w-[100vw] h-[100vh] bg-white overflow-hidden flex flex-col justify-center items-center text-left text-5xl text-black font-['Freckle_Face']">
-            <div className="w-[474px] h-20 text-center justify-center text-black text-6xl font-normal font-['Freckle_Face'] mb-[20px]">Touch Grass???</div>
+        <div className="w-[100vw] h-[100vh] overflow-hidden flex flex-col justify-center items-center text-left text-5xl text-black font-['Freckle_Face']">
+            <div className="w-[474px] text-center justify-center text-black text-6xl font-normal font-['Freckle_Face'] mb-[20px]">
+                <img src="/logo.png" alt="Logo" className="mx-auto" />
+            </div>
             <div className="w-[553px] h-28 bg-zinc-300 rounded-[60px] flex items-center justify-center mb-10 hover:bg-zinc-400 cursor-pointer transition-colors duration-300">
                 <div className="w-[553px] text-center justify-center text-black text-6xl font-normal font-['Freckle_Face']">How To Play</div>
             </div>
@@ -73,6 +75,7 @@ export default function Home() {
             <div className="w-[553px] h-28 bg-zinc-300 rounded-[60px] flex items-center justify-center mb-10 hover:bg-zinc-400 cursor-pointer transition-colors duration-300">
                 <div className="w-[553px] text-center justify-center text-black text-6xl font-normal font-['Freckle_Face']" onClick={signOut}>Sign Out</div>
             </div>
+            <img src="/images/bg.svg" alt="Background" className="absolute top-0 left-0 w-[100vw] h-[100vh] object-cover -z-10" />
         </div>
     );
 }

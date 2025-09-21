@@ -84,7 +84,7 @@ def detect():
         return jsonify(error=f"Internal error: {e}"), 500
 
 
-def _grade_with_gemini(items: list[dict], *, parse_points: bool = True, default_points: int = 2) -> list[int]:
+def _grade_with_gemini(items: list[dict], description: str, *, parse_points: bool = True, default_points: int = 2) -> list[int]:
     """
     If parse_points=True, Gemini extracts max_points from each question (default if missing).
     If parse_points=False, each item must include 'max_points' and we clamp to it.
@@ -92,10 +92,13 @@ def _grade_with_gemini(items: list[dict], *, parse_points: bool = True, default_
     """
     if parse_points:
         prompt = (
-            "You are an autograder. For each item:\n"
+            f"You are an autograder for a viewer who watched a reel, with the description {description}. For each item:\n"
             f"1) Parse integer max_points from item.question (e.g., '5 points', '(5 pts)'); "
             f"if absent, use {default_points}.\n"
             "2) Grade item.response from 0..max_points (integers only).\n"
+            "Make sure to read the question carefully and grade based on the content of the response.\n"
+            "Grade strictly based on correctness, completeness, and relevance to the question. Make sure that the response's grammar is correct.\n"
+            "Use <think></think> to reason step-by-step if needed.\n"
             "Return ONLY JSON: {\"scores\": [int, ...]} in item order."
         )
     else:
@@ -105,6 +108,8 @@ def _grade_with_gemini(items: list[dict], *, parse_points: bool = True, default_
             "Return ONLY JSON: {\"scores\": [int, ...]} in item order."
         )
 
+    # print(prompt, flush=True)
+
     cfg = types.GenerateContentConfig(response_mime_type="application/json")
     resp = client.models.generate_content(
         model=MODEL,
@@ -113,6 +118,7 @@ def _grade_with_gemini(items: list[dict], *, parse_points: bool = True, default_
     )
 
     text = (resp.text or "{}").strip()
+    # print(text, flush=True)
     if "```" in text:  # be resilient to code fences
         text = text.split("```", 1)[-1].split("```", 1)[0]
 
@@ -136,6 +142,7 @@ def _grade_with_gemini(items: list[dict], *, parse_points: bool = True, default_
 
 @app.post("/grade")
 def grade():
+    # print("testing/??", flush=True)
     """
     POST /grade
     Body: { "questions": [str, ...], "responses": [str, ...] }
@@ -146,6 +153,9 @@ def grade():
         body = request.get_json(force=True)
         questions = body.get("questions")
         responses = body.get("responses")
+        description = body.get("description", "A video reel with various questions.")
+
+        # print("Grading", len(questions), "questions")
 
         if not isinstance(questions, list) or not isinstance(responses, list):
             return jsonify(error="'questions' and 'responses' must be lists"), 400
@@ -153,9 +163,11 @@ def grade():
             return jsonify(error="Lengths of 'questions' and 'responses' must match"), 400
         if not questions:
             return jsonify(scores=[])
+        
+        # print("grading", flush=True)
 
         items = [{"question": str(q), "response": str(r)} for q, r in zip(questions, responses)]
-        scores = _grade_with_gemini(items, parse_points=True, default_points=2)
+        scores = _grade_with_gemini(items, description=description, parse_points=True, default_points=2)
         return jsonify(scores=scores)
 
     except json.JSONDecodeError as e:

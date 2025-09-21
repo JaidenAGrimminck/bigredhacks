@@ -1,11 +1,42 @@
+import React from "react";
+
+class ImToLazyToFigureOutTheIssueTwo {
+    static a = 0;
+}
 
 export default function Intro({
     onFinish, playerNames=[]
 }) {
+    let audioRef = React.useRef(null);
+    let d = false;
+    if (ImToLazyToFigureOutTheIssueTwo.a === 0) {
+        ImToLazyToFigureOutTheIssueTwo.a = 1;
+        d = true;
+    }
+    
 
-    const tm = setTimeout(() => {
-        onFinish();
-    }, 5000); //TODO: change to 10000
+    if (playerNames.length < 4) {
+        while (playerNames.length < 4) {
+            playerNames.push(``);
+        }
+    }
+
+    React.useEffect(() => {
+        if (!d) return;
+        
+        if (audioRef.current) {
+            audioRef.current.play();
+        }
+    }, []);
+
+
+    React.useEffect(() => {
+        const tm = setTimeout(() => {
+            onFinish();
+            console.log("intro finished");
+        }, 43000); // TODO: 10000
+        return () => clearTimeout(tm);
+    }, [onFinish]);
 
     return (
         <div className="w-[100vw] h-[100vh] flex flex-col justify-center items-center text-5xl text-black font-['Freckle_Face']">
@@ -27,13 +58,15 @@ export default function Intro({
             </div>
             {/* button in bottom right corner */}
             <button className="absolute bottom-4 right-4 bg-blue-500 text-white p-2 rounded hover:bg-blue-600 active:bg-blue-700 z-1000" onClick={() => {
-                clearTimeout(tm);
+                if (audioRef.current) {
+                    audioRef.current.pause();
+                }
                 onFinish();
             }}>Skip Intro</button>
 
             {/* audio */}
             <audio autoPlay>
-                <source src="/audio/intro.mp3" type="audio/mpeg" />
+                <source src="/audio/explain.mp3" type="audio/mpeg" />
             </audio>
         </div>
         );

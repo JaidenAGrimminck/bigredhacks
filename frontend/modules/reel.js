@@ -13,12 +13,14 @@ export default function Reel({ onFinish, url }) {
             setClicked(true);
         }
 
+        //onFinish();
+
         onClick();
         
-        // window.addEventListener('click', onClick);
-        // return () => {
-        //     window.removeEventListener('click', onClick);
-        // }
+        window.addEventListener('click', onClick);
+        return () => {
+            window.removeEventListener('click', onClick);
+        }
     }, []);
 
     const tryFinish = () => {

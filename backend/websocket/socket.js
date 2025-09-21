@@ -2,7 +2,7 @@ const express = require("express");
 const GameManager = require("../modules/Game");
 
 const consts = require("../consts");
-const YOLO_URL = "http://localhost:3333/detect";
+const YOLO_URL = consts.YOLO_URL;
 
 module.exports = (expressWs) => {
     const router = express.Router();
@@ -136,8 +136,7 @@ module.exports = (expressWs) => {
                 for (let player of game.players) {
                     if (game.playerSockets[player]) {
                         game.playerSockets[player].send(JSON.stringify({
-                            type: 'responses',
-                            responses: data.responses,
+                            type: 'req_responses',
                         }));
                     }
                 }
@@ -298,14 +297,14 @@ module.exports = (expressWs) => {
                 for (let detection of yolo.detections) {
                     const playerDetectedefore = game.detectedItems[name] || [];
                     if (game.items.includes(detection.class_name) && !playerDetectedefore.includes(detection.class_name)) {
-                        game.points[name] = (game.points[name] || 0) + consts.POINTS_PER_ITEM;
+                        game.points[name] = (game.points[name] || 0) + consts.POINTS_PER_ITEM + (!game.previouslyFoundItems.includes(detection.class_name) ? 1 : 0);
                         if (!game.detectedItems[name]) {
                             game.detectedItems[name] = [];
                         }
+                        game.previouslyFoundItems.push(detection.class_name);
                         game.detectedItems[name].push(detection.class_name);
 
                         console.log(`Player ${name} detected item ${detection.class_name} (+${consts.POINTS_PER_ITEM} points)`);
-
                     
                         ws.send(JSON.stringify({
                             type: 'detection',
@@ -318,7 +317,6 @@ module.exports = (expressWs) => {
                         return;
                     }
                 }
-
                 
                 ws.send(JSON.stringify({
                     type: 'detection',
@@ -355,6 +353,77 @@ module.exports = (expressWs) => {
                     leaderboard: leaderboard,
                 }));
             } else if (data.type === 'submit_reel_responses') {
+                const game = GameManager.getGame(gcode);
+                if (game == null) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'Game not found',
+                    }));
+                    return;
+                }
+
+                //game.reel.responses[name] = data.responses;
+                
+                console.log(`Player ${name} submitted reel responses: `, data.responses);
+
+                // data.responses = [
+                //     "Jaiden",
+                //     "9/21/2025",
+                //     "The two numbers being compared are the numbers '67' and '41.'",
+                //     "The narrator's deadpan tone creates a comedic effect with the video. The narrator describes numbers, which normally, not comedic, but with the deadpan, it adds to the humor.",
+                //     "The dings keeps the viewers attention span, and also creates an interruption contributing to the humor of the video.",
+                //     "'67' has more aura since there is an elite hand signal associated with it compared to 47."
+                // ]
+
+                // console.log("new resp" , data.responses, game.reel.questions);
+
+                // let toSend = {};
+
+                // for (let i = 0; i < game.reel.questions.length; i++) {
+                //     toSend[game.reel.questions[i]] = data.responses[i];
+                // }
+
+                const req = await fetch(consts.GRADER_URL, {
+                    method: "POST",
+                    headers: { "content-type": "application/json", "accept": "application/json" },
+                    body: JSON.stringify({
+                        questions: game.reel.questions,
+                        responses: data.responses,
+                        description: game.reel.description,
+                    }),
+                })
+
+                let grade = 0;
+
+                if (req.status !== 200) {
+                    console.log("Error grading reel responses");
+                    console.error(await req.text());
+                } else {
+                    let scores = (await req.json()).scores;
+                    grade = scores.reduce((a, b) => a + b, 0);
+                }
+                
+                console.log(`Player ${name} received reel grade: `, grade);
+                
+                game.points[name] = (game.points[name] || 0) + grade;
+                game.playersGraded += 1;
+                
+                ws.send(JSON.stringify({
+                    type: 'reel_grade',
+                    grade,
+                }));
+
+                if (game.playersGraded >= game.players.length) {
+                    // all players have been graded, move to leaderboard
+                    if (game.hostSocket) {
+                        game.hostSocket.send(JSON.stringify({
+                            type: 'switch_to_game',
+                            state: 'leaderboard2',
+                        }));
+
+                        game.state = 'leaderboard';
+                    }
+                }
             }
         });
         

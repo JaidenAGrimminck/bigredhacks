@@ -1,6 +1,7 @@
 const { generateListOfItems } = require("../ai/llm");
 const { getRandomReel } = require("./reels");
 
+
 function generateEasyCode() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let result = '';
@@ -26,6 +27,9 @@ class Game {
         this.detectedItems = {}; // map of player name to list of detected items
 
         this.items = ["bottle", "statue", "tree", "chair", "couch"]; // list of items to find
+        this.previouslyFoundItems = [];
+
+        this.playersGraded = 0;
 
         this.reel = getRandomReel(); // get a random reel
     }
@@ -49,7 +53,7 @@ class Game {
     }
 
     async generateItems() {
-        const items = await generateListOfItems();
+        const items = await generateListOfItems(); //["bottle", "statue", "tree", "chair", "couch"]; //
 
         if (items.length > 5) {
             items.splice(5); // limit to 5 items

@@ -1,0 +1,42 @@
+[
+    {
+        "reel": "Video-459.mp4",
+        "description": "In the video, it's a grid, with a cup of apple juice displayed in the top left corner (no ice), a cup of orange juice in the top right (with ice). As the video progresses, the grids underneath start to appear, with an image of an apple appearing quickly with the caption 'Ingredients,' and then a picture of an orange appearing slowly with the caption 'Ingredients.' In the background, a upbeat vocal track is playing.",
+        "questions": [
+            "(2pts) What are the two main ingredients shown in the video?",
+            "(2pts) Which cup has ice in it?",
+            "(2pts) What kind of comedic effect might represent the orange juice's slower appearance compared to the apple juice?",
+            "(3pts) How might the background music contribute to the overall mood of the video?"
+        ]
+    },
+    {
+        "reel": "Video-606.mp4",
+        "description": "The video begins with a white, small dog sitting on grass, its tongue out, looking happy. It has black eyes. It is wearing a small brown fedora. The picture of the dog goes from the bottom left to the top right, then appears in the center, and then another copy of the image of the dog goes from right to left. In the background a funky bass-heavy track is playing.",
+        "questions": [
+            "(2pts) What type of animal is featured in the video?",
+            "(2pts) What accessory is the animal wearing? Be specific.",
+            "(3pts) How does the movement of the images contribute to the overall feel of the video?",
+            "(3pts) How does the background music enhance the mood of the video?"
+        ]
+    },
+    {
+        "reel": "Video-385.mp4",
+        "description": "The video has a video playing in the center with a caption above that says, 'when you get in an elevator and lowkey realize there's levels to this shi.' The video shows a small clip from the anime 'Evangelion' where a character named Shinji is looking out from a cliffside, overlooking a city. The video shows different angles of the scene, zooming in and out, and panning around. In the background, a piano track is playing.",
+        "questions": [
+            "(2pts) What is the main theme or message conveyed in the video?",
+            "(2pts) What are the slang terms used in the caption, and what do they mean?",
+            "(3pts) How does the video clip in the video relate to the caption?",
+            "(3pts) How does the background music contribute to the overall mood of the video?"
+        ]
+    },
+    {
+        "reel": "Video-836.mp4",
+        "description": "The video has in the background the man saying (deadpanned), '67 has a lot of aura because it has its own handshake. But don't sleep on 41 because it has no elite hand signal. Which one do you think has more aura?' There are also correct ding noises sounding every second or so. In the foreground, it switches between a video of the narrator, and a video of people doing handsignals.",
+        "questions": [
+            "(2pts) What are the two numbers being compared in terms of 'aura'?",
+            "(3pts) How does the narrator's tone contribute to the overall feel of the video?",
+            "(3pts) What effect do the correct ding noises have on the viewer's perception of the video?",
+            "(4pts) Which number do you believe has more 'aura' based on the narrator's description, and why? Support your answer with evidence from the video."
+        ]
+    }
+]

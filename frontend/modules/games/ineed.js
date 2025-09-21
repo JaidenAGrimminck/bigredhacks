@@ -1,3 +1,4 @@
+import { TAKEPHOTOS_TIME } from "@/app/constants";
 import "@/app/globals.css";
 import { Freckle_Face } from "next/font/google";
 import React from "react";
@@ -9,9 +10,9 @@ const freckleFace = Freckle_Face({
 });
 
 // Header Component
-function GameHeader({ initialTime, onFinish }) {
+function GameHeader({ initialTime, onFinish, audio }) {
     const timerRef = React.useRef(null);
-    const maxTime = 5 * 60 * 1000; // 5 minutes in milliseconds alt: 8 * 1000;//
+    const maxTime = TAKEPHOTOS_TIME * 1000;//5 * 60 * 1000; // 5 minutes in milliseconds alt: 
 
     React.useEffect(() => {
         const updateTimer = () => {
@@ -36,6 +37,20 @@ function GameHeader({ initialTime, onFinish }) {
         
         return () => clearInterval(timer);
     }, [initialTime]);
+    
+    React.useEffect(() => {
+        if (timerRef.current && audio && audio.current) {
+            const intv = setInterval(() => {
+                if (timerRef.current.textContent === "0:10") {
+                    audio.current.play();
+                    clearInterval(intv);
+                }
+            }, 500);
+
+            return () => clearInterval(intv);
+        }
+
+    }, [timerRef, audio])
     
     return (
         <div className="flex justify-between items-start p-4">
@@ -183,6 +198,8 @@ export default function INeed({ leaderboard, gameStart, onFinish, items=["Tree",
     const [people, setPeople] = React.useState(["Smith", "John", "Emily", "Martin"]);
     const [points, setPoints] = React.useState([3, 5, 2, 4]);
 
+    let tensecondsAudio = React.useRef(null);
+
     React.useEffect(() => {
         console.log(leaderboard)
         setPeople(leaderboard.map(entry => entry.name));
@@ -192,7 +209,7 @@ export default function INeed({ leaderboard, gameStart, onFinish, items=["Tree",
     return (
         <div className={`min-h-screen p-4 ${freckleFace.variable}`}>
             <div className="max-w-7xl mx-auto">
-                <GameHeader initialTime={gameStart} onFinish={onFinish} />
+                <GameHeader initialTime={gameStart} onFinish={onFinish} audio={tensecondsAudio} />
                 
                 <div className="flex flex-row gap-8 justify-around flex-wrap">
 
@@ -219,6 +236,9 @@ export default function INeed({ leaderboard, gameStart, onFinish, items=["Tree",
 
                 <img className="w-[100vw] absolute top-0 left-0 -z-10" src="/images/bg.svg" />
             </div>
+            {/* Audio /audio/funky_music.mp3 */}
+            <audio src="/audio/funky_music.mp3" autoPlay loop />
+            <audio src="/audio/tenseconds.mp3" ref={tensecondsAudio} />
         </div>
     );
 }

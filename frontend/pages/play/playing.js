@@ -1,7 +1,6 @@
 
 import { API_BASE_URL } from "@/app/constants";
 import "@/app/globals.css";
-import { Freckle_Face } from "next/font/google";
 import React from "react";
 
 import Countdown from "@/modules/countdown";
@@ -14,11 +13,19 @@ import Leaderboard from "@/modules/leaderboard";
 export default function Playing() {
     const testing = false;
     let [websocket, setWebsocket] = useState(null);
+    //let [state, setState] = useState('intro'); // intro, countdown, leaderboard, play/ineed, play/reelreview
+
+    let parentRef = React.useRef(null);
+    let stateRef = React.useRef('intro');
+    
     let [state, setState] = useState('intro'); // intro, countdown, leaderboard, play/ineed, play/reelreview
+    
     let [leaderboard, setLeaderboard] = useState([]);
     let [gameStart, setGameStart] = useState(Date.now());
     let [reel, setReel] = useState(null);
     let [items, setItems] = useState([]);
+    let [doneReelReview, setDoneReelReview] = useState(false);
+    let [doneCountdown, setDoneCountdown] = useState(false);
 
     const f = async () => {
         if (testing) return;
@@ -72,13 +79,19 @@ export default function Playing() {
 
             if (data.type === 'leaderboard_update') {
                 setLeaderboard(data.leaderboard);
-                console.log(data.leaderboard)
             } else if (data.type === 'error') {
                 if (data.message === 'Game not found') {
                     window.location.href = "/";
                 }
             } else if (data.type === 'switch_to_game') {
+                if (stateRef.current === 'takephotos' && data.state === 'countdown') return; // don't go backwards
+                
                 setState(data.state);
+                stateRef.current = data.state;
+
+                if (data.state === 'reelreview') {
+                    setDoneReelReview(true);
+                }
             } else if (data.type === 'reel_data') {
                 //console.log(data.reel)
                 setReel(data.reel);
@@ -96,12 +109,18 @@ export default function Playing() {
     React.useEffect(() => {
         f();
     }, []);
-
-    const nextState = () => {
+    
+    const nextState = React.useCallback(() => {
         if (state === 'intro') {
+            if (doneCountdown) return;
+
             setState('countdown');
+            stateRef.current = 'countdown';
+
+            setDoneCountdown(true);
         } else if (state === 'countdown') {
             console.log(websocket)
+            setDoneCountdown(true);
 
             if (websocket) {
                 websocket.send(JSON.stringify({
@@ -112,6 +131,7 @@ export default function Playing() {
             
             setGameStart(Date.now());
             setState('takephotos');
+            stateRef.current = 'takephotos';
         } else if (state === 'takephotos') {
             if (websocket) {
                 websocket.send(JSON.stringify({
@@ -119,14 +139,24 @@ export default function Playing() {
                     state: 'leaderboard',
                 }));
             }
+            
             setState('leaderboard');
+            stateRef.current = 'leaderboard';
         } else if (state === 'leaderboard') {
+            if (doneReelReview) return;
+
+            if (websocket) {
+                setState('reelreview');
+                stateRef.current = 'reelreview';
+            }
+        } else if (state === 'reelreview') {
             if (websocket) {
                 websocket.send(JSON.stringify({
                     type: 'forward_state',
                     state: 'reelreview',
                 }));
             }
+
             setState('reelreview');
         } else if (state === 'reelreview') {
             if (websocket) {
@@ -137,7 +167,13 @@ export default function Playing() {
             }
             //setState('TODO'); // TODO MEEEEEEE
         }
-    }
+    });
+
+    React.useEffect(() => {
+        if (state === 'reelreview') {
+            setDoneReelReview(true);
+        }
+    }, [state]);
 
     React.useEffect(() => {
         if (testing) return;
@@ -160,12 +196,13 @@ export default function Playing() {
     }, [state, websocket, gameStart]);
 
     return (
-        <div>
-            {state === 'intro' && <Intro playerNames={leaderboard ? leaderboard.map(entry => entry.name) : ["jaiden", "test", "abab", "ahliushfdlkasj"]} onFinish={nextState}/>}
-            {state === 'countdown' && <Countdown onFinish={nextState} />}
+        <div ref={parentRef}>
+            { state === 'intro' && <Intro playerNames={[]} onFinish={nextState}/>}
+            { state === 'countdown' && <Countdown onFinish={nextState} />}
             { state === 'takephotos' && <INeed leaderboard={leaderboard} gameStart={gameStart} items={items} onFinish={nextState} />}
             { state === 'leaderboard' && <Leaderboard leaderboard={leaderboard} onFinish={nextState}/> }
             { state === 'reelreview' && <ReelReview websocket={websocket} leaderboard={leaderboard} gameStart={gameStart} reel={reel} /> }
+            { state === 'leaderboard2' && <Leaderboard leaderboard={leaderboard} onFinish={nextState} secondLeaderboard={true} /> }
         </div>
     );
 }

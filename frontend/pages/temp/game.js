@@ -335,6 +335,24 @@ export default function Game() {
                 setStartTime(data.startTime);
             } else if (data.type === 'reel_questions') {
                 setReelQuestions(data.questions);
+            } else if (data.type === 'req_responses') {
+                if (questionsRef.current) {
+                    let answers = [];
+                    for (let child of questionsRef.current.children) {
+                        if (child.tagName === "DIV" && child.children[0] && child.children[0].tagName === "TEXTAREA") {
+                            answers.push(child.children[0].value);
+                        }
+                    }
+                    ws.send(JSON.stringify({
+                        type: 'submit_reel_responses',
+                        responses: answers,
+                    }));
+                } else {
+                    ws.send(JSON.stringify({
+                        type: 'submit_reel_responses',
+                        responses: [],
+                    }));
+                }
             }
         }
         

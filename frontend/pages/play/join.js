@@ -51,6 +51,12 @@ export default function Join() {
         const letterThree = React.useRef(null);
         const letterFour = React.useRef(null);
 
+        const clickRef = React.useRef(null);
+
+        const plopRef = React.useRef(null);
+
+        let [clicked, setClicked] = React.useState(false);
+
         const players = [playerOne, playerTwo, playerThree, playerFour];
 
         let playerIndex = [0, 1, 2, 3];
@@ -123,8 +129,15 @@ export default function Join() {
                         handPlacerRef.current.style.transition = "bottom 0.8s ease-out";
                         handPlacerRef.current.style.bottom = `${finalPos.y}px`;
 
+                        setTimeout(() => {
+                            if (plopRef.current) {
+                                plopRef.current.play();
+                            }
+                        }, 700);
                         
                         setTimeout(() => {
+                            
+
                             if (handPlacerRef.current) {
                                 handPlacerRef.current.style.bottom = `-1000px`;
                             }
@@ -214,7 +227,7 @@ export default function Join() {
         })
 
         return (
-                <div className={`min-h-screen w-full h-[100vh] bg-white overflow-hidden relative ${freckleFace.variable} overflow-y-hidden flex flex-col`}>
+            <div className={`min-h-screen w-full h-[100vh] bg-white overflow-hidden relative ${freckleFace.variable} overflow-y-hidden flex flex-col`}>
                         {/* Background */}
                         <img 
                                 className="absolute inset-0 w-full h-full object-cover" 
@@ -257,13 +270,32 @@ export default function Join() {
                         {/* GO Button */}
                         <div className="relative z-10 flex justify-center pb-8 lg:pb-16">
                                 <button className="bg-green-500 rounded-[50px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] px-8 py-4 lg:px-12 lg:py-6 flex items-center gap-4 hover:bg-green-600 transition-colors duration-300 cursor-pointer">
-                                        <span className="text-white text-4xl lg:text-7xl font-normal font-['Freckle_Face']" onClick={startGame}>
+                                        <span className="text-white text-4xl lg:text-7xl font-normal font-['Freckle_Face']" onClick={() => {
+                                            
+                                            startGame();
+                                        }} onMouseEnter={() => {
+                                            clickRef.current.currentTime = 0;
+                                            clickRef.current.play();
+                                        }}>
                                                 GO!
                                         </span>
                                 </button>
                         </div>
 
                         <img className="absolute bottom-[-1000px] left-0 w-[700px] rotate-[45deg]" src="/images/hand_outstreched.png" alt="hand" ref={handPlacerRef} />
+                        
+                        { !clicked && <div className="absolute top-0 left-0 w-[100vw] h-[100vh] z-1000 bg-black/25 flex items-center justify-center" onClick={
+                            () => setClicked(true)
+                        }>
+                            <h1>Click to continue.</h1>
+                        </div> }
+
+                        {
+                            clicked && <audio src="/audio/beach.mp3" autoPlay loop />
+                        }
+
+                        <audio src="/audio/splash.mp3" ref={plopRef}/>
+                        <audio src="/audio/click.mp3" ref={clickRef} />
                 </div>
         );
 }
