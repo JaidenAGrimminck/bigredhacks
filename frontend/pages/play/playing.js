@@ -18,6 +18,7 @@ export default function Playing() {
     let [leaderboard, setLeaderboard] = useState([]);
     let [gameStart, setGameStart] = useState(Date.now());
     let [reel, setReel] = useState(null);
+    let [items, setItems] = useState([]);
 
     const f = async () => {
         if (testing) return;
@@ -42,6 +43,15 @@ export default function Playing() {
                 type: 'get_reel',
             }));
 
+            ws.send(JSON.stringify({
+                type: 'leaderboard_request',
+            }));
+
+            console.log("req-ing items")
+            ws.send(JSON.stringify({
+                type: "get_items",
+            }));
+
             setInterval(() => {
                 ws.send(JSON.stringify({
                     type: 'leaderboard_request',
@@ -62,6 +72,7 @@ export default function Playing() {
 
             if (data.type === 'leaderboard_update') {
                 setLeaderboard(data.leaderboard);
+                console.log(data.leaderboard)
             } else if (data.type === 'error') {
                 if (data.message === 'Game not found') {
                     window.location.href = "/";
@@ -69,13 +80,16 @@ export default function Playing() {
             } else if (data.type === 'switch_to_game') {
                 setState(data.state);
             } else if (data.type === 'reel_data') {
-                console.log(data.reel)
+                //console.log(data.reel)
                 setReel(data.reel);
+            } else if (data.type === 'game_items') {
+                console.log(data.items);
+                setItems(data.items);
             }
         }
 
         ws.onclose = () => {
-            console.log("WebSocket connection closed");
+            console.log("WebSocket connection clxosed");
         }
     }
     
@@ -147,9 +161,9 @@ export default function Playing() {
 
     return (
         <div>
-            {state === 'intro' && <Intro playerNames={["jaiden", "test", "abab", "ahliushfdlkasj"]} onFinish={nextState}/>}
+            {state === 'intro' && <Intro playerNames={leaderboard ? leaderboard.map(entry => entry.name) : ["jaiden", "test", "abab", "ahliushfdlkasj"]} onFinish={nextState}/>}
             {state === 'countdown' && <Countdown onFinish={nextState} />}
-            { state === 'takephotos' && <INeed leaderboard={leaderboard} gameStart={gameStart} onFinish={nextState} />}
+            { state === 'takephotos' && <INeed leaderboard={leaderboard} gameStart={gameStart} items={items} onFinish={nextState} />}
             { state === 'leaderboard' && <Leaderboard leaderboard={leaderboard} onFinish={nextState}/> }
             { state === 'reelreview' && <ReelReview websocket={websocket} leaderboard={leaderboard} gameStart={gameStart} reel={reel} /> }
         </div>

@@ -23,10 +23,14 @@ def _parse_data_url(data_url: str) -> tuple[str, bytes]:
         raise ValueError("Image too large for inline upload; keep under ~20MB.")
     return mime, blob
 
-def _labels_from_gemini(image_part) -> list[str]:
+def _labels_from_gemini(image_part, items) -> list[str]:
     prompt = (
-        "List up to 10 concise object labels visible in this photo. "
-        "Return JSON exactly as {\"labels\": [\"label1\", \"label2\", ...]} with lowercase nouns only."
+        "The image is from a user who is playing a game where they need to find certain objects around them. "
+        "List up to 10 concise object labels visible in this photo within a <think></think> block. "
+        "After listing the the objects, compare the list to the provided items that might be in the image. "
+        "The items are: " + ", ".join(f'"{it}"' for it in items) + ". "
+        "If any of those items are visible in the image, return a JSON array in the format of ```[\"item1\", \"item2\", ...]``` with the first index being the item that matches the list of items provided. "
+        "If none of the items are visible, return a JSON array with a few of the most prominent objects in the image in the same format. "
     )
     cfg = types.GenerateContentConfig(response_mime_type="application/json")
     resp = client.models.generate_content(model=MODEL, contents=[image_part, prompt], config=cfg)
@@ -36,8 +40,10 @@ def _labels_from_gemini(image_part) -> list[str]:
         text = text.split("```", 1)[-1]
         if "```" in text:
             text = text.split("```", 1)[0]
+
+    print("Gemini response:", text)
     data = json.loads(text)
-    labels = data.get("labels", [])
+    labels = data if isinstance(data, list) else []
     # Normalize to lowercase strings
     labels = [str(x).strip().lower() for x in labels if isinstance(x, (str, int, float))]
     # Deduplicate while preserving order
@@ -59,11 +65,15 @@ def detect():
         data_url = body.get("image")
         if not data_url:
             return jsonify(error="Missing 'image' (base64 data URL)."), 400
+        items = body.get("items")
+        
+        if not items or not isinstance(items, list) or not all(isinstance(i, str) for i in items):
+            return jsonify(error="Missing 'items' list of strings."), 400
 
         mime, img_bytes = _parse_data_url(data_url)
         image_part = types.Part.from_bytes(data=img_bytes, mime_type=mime)
 
-        labels = _labels_from_gemini(image_part)
+        labels = _labels_from_gemini(image_part, items)
         return jsonify(labels=labels, model=MODEL)
     except json.JSONDecodeError as e:
         return jsonify(error=f"JSON decode error from Gemini: {e}"), 502

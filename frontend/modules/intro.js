@@ -5,7 +5,7 @@ export default function Intro({
 
     const tm = setTimeout(() => {
         onFinish();
-    }, 2000); //TODO: change to 10000
+    }, 5000); //TODO: change to 10000
 
     return (
         <div className="w-[100vw] h-[100vh] flex flex-col justify-center items-center text-5xl text-black font-['Freckle_Face']">

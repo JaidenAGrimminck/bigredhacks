@@ -25,7 +25,7 @@ class Game {
 
         this.detectedItems = {}; // map of player name to list of detected items
 
-        this.items = ["fountain", "statue", "tree", "chair", "couch"]; // list of items to find
+        this.items = ["bottle", "statue", "tree", "chair", "couch"]; // list of items to find
 
         this.reel = getRandomReel(); // get a random reel
     }
@@ -39,9 +39,6 @@ class Game {
         for (let player of this.players) {
             this.points[player] = 0;
         }
-        
-        // const items = await generateListOfItems();
-        // this.items = items;
 
         if (this.hostSocket !== null) {
             this.hostSocket.send(JSON.stringify({
@@ -49,6 +46,23 @@ class Game {
                 items: this.items,
             }));
         }
+    }
+
+    async generateItems() {
+        const items = await generateListOfItems();
+
+        if (items.length > 5) {
+            items.splice(5); // limit to 5 items
+        }
+        if (items.length < 5) {
+            while (items.length < 5) {
+                items.push("bottle"); // pad with bottles if less than 5 items
+            }
+        }
+
+        this.items = items;
+
+        return items;
     }
 
     reestablishSocket(newSocket) {

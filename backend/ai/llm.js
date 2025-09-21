@@ -50,23 +50,25 @@ async function reviewResponses(responses, reelDescription, questions) {
 
 async function generateListOfItems() {
     const prompt = `
-    You are generating a list of 10 random items that players can find and take a photo of within a 5 minute time limit for a game called "TouchGrass!"
-    The players are starting inside Clark Hall on the Cornell University campus.
-    The items should be common and easily recognizable either by 1. YOLOv8 and 2. a model trained on some recognizable buildings/landmarks on Cornell's campus.
-    Some examples of items could include (but are NOT limited to): a tree, a patch of grass, the Cornell Clocktower, a pair of scissors, a fire hydrant, a stop sign, a bench, a bicycle, etc.
-    Do NOT include items that are too obscure or hard to find on Cornell's campus (e.g. a specific statue, a specific building, etc.) THIS DOES NOT MEAN LANDMARKS LIKE THE CLOCKTOWER OR MCGRAW TOWER (ETC), THOSE ARE FINE.
-    Do NOT include items that are too similar to each other (e.g. two different types of trees), rather include items that are visually distinct from each other.
-    Do NOT include items that are not likely to be found on Cornell's campus (e.g. a beach ball, a surfboard, etc.)
-    The items should be things that can be found outdoors on Cornell's campus.
-    The items should be things that can be found in multiple locations on Cornell's campus.
-    The items should be things that are not too small or too large.
-    The items should be things that are not too dangerous or illegal to find or take a photo of.
-    The items should be things that are not too specific to a certain location on Cornell's campus (e.g. the McGraw Tower, the Arts Quad, etc.)
-    These items can be more specific to this time of year (it is currently late September, early Fall) - for example, a fallen leaf could be valid items.
-    Be funny, random and creative! Use <think>...</think> tags to think through your reasoning if needed.
-    The items should be diverse and not too similar to each other.
-    Before finalizing your list, think through the list and make sure it meets all the criteria above, especially if a common YOLOv8 model would be able to recognize it.
-    Format the list as a JSON array of strings.
+    You are generating a list of 10 random items that players can find and take a photo of within a 5 minute time limit for a game called "TouchGrass!" 
+    The players are starting inside Clark Hall on the Cornell University campus. 
+    The items should be common and easily recognizable either by 1. YOLOv8 and 2. a model trained on some recognizable buildings/landmarks on Cornell's campus. 
+    Some examples of items could include (but are NOT limited to): a tree, a patch of grass, a pair of scissors, a fire hydrant, a stop sign, a bench, a bicycle, etc. 
+    Do NOT include items that are too obscure or hard to find on Cornell's campus (e.g. a specific statue, a specific building, etc.) THIS DOES NOT MEAN LANDMARKS LIKE THE CLOCKTOWER OR MCGRAW TOWER (ETC), THOSE ARE FINE. 
+    Do NOT include items that are too similar to each other (e.g. two different types of trees), rather include items that are visually distinct from each other. 
+    Do NOT include items that are not likely to be found on Cornell's campus (e.g. a beach ball, a surfboard, etc.) 
+    The items should be things that can be found INDOORS on Cornell's campus. 
+    The items should be things that can be found in multiple locations on Cornell's campus. 
+    The items should be things that are not too small or too large. 
+    The items should be things that are not too dangerous or illegal to find or take a photo of. 
+    The items should be things that are not too specific to a certain location on Cornell's campus (e.g. the McGraw Tower, the Arts Quad, etc.) 
+    These items can be more specific to this time of year (it is currently late September, early Fall) - for example, a fallen leaf could be valid items. 
+    Make sure the items are only a couple of words long (e.g. "a tree", "a patch of grass", etc.) 
+    Be funny, random and creative! Use <think>...</think> tags to think through your reasoning if needed. 
+    The items should be diverse and not too similar to each other. 
+    REMINDER: THESE ITEMS SHOULD BE THINGS THAT CAN BE FOUND INDOORS ON CORNELL'S CAMPUS, WITHOUT EXITING CLARK HALL. 
+    Before finalizing your list, think through the list and make sure it meets all the criteria above, especially if a common YOLOv8 model would be able to recognize it. 
+    Format the list as a JSON array of strings. 
     `
     let response = await promptLLM(prompt);
 

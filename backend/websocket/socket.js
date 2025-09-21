@@ -46,6 +46,7 @@ module.exports = (expressWs) => {
                     type: 'reestablished',
                 }));
 
+
                 console.log(`Game ${code} reestablished by host`);
                 gcode = code;
             } else if (data.type === 'leaderboard_request') {
@@ -158,6 +159,26 @@ module.exports = (expressWs) => {
                         }));
                     }
                 }
+            } else if (data.type === 'get_items') {
+                const game = GameManager.getGame(gcode);
+                if (game == null) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'Game not found',
+                    }));
+                    return;
+                }
+                
+                const f = async () => {
+                    await game.generateItems();
+                
+                    ws.send(JSON.stringify({
+                        type: 'game_items',
+                        items: game.items,
+                    }));
+                };
+
+                f();
             }
         });
 
@@ -241,7 +262,10 @@ module.exports = (expressWs) => {
                 const yolo = await (await fetch(YOLO_URL, {
                     method: "POST",
                     headers: { "content-type": "application/json", "accept": "application/json" },
-                    body: JSON.stringify({ data_url: photo })
+                    body: JSON.stringify({
+                            image: photo, 
+                            items: GameManager.getGame(gcode).items,
+                        }),
                 })).json();
 
                 console.log(yolo);
@@ -256,9 +280,17 @@ module.exports = (expressWs) => {
                     }));
                     return;
                 }
+
+                if (yolo.labels) {
+                    yolo["detections"] = yolo.labels;
+                }
                 
                 yolo.detections = yolo.detections.map(d => {
-                    d.class_name = d.class_name.toLowerCase();
+                    if (typeof d === 'object') {
+                        d.class_name = d.class_name.toLowerCase();
+                    } else {
+                        d = { class_name: d.toLowerCase() };
+                    }
                     return d;
                 })
                 

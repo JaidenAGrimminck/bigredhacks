@@ -44,6 +44,12 @@ export default function Join() {
         const playerTwo = React.useRef(null);
         const playerThree = React.useRef(null);
         const playerFour = React.useRef(null);
+        const handPlacerRef = React.useRef(null);
+
+        const letterOne = React.useRef(null);
+        const letterTwo = React.useRef(null);
+        const letterThree = React.useRef(null);
+        const letterFour = React.useRef(null);
 
         const players = [playerOne, playerTwo, playerThree, playerFour];
 
@@ -88,18 +94,41 @@ export default function Join() {
                     console.log(`Game established with code: ${data.code}`);
                     for (let i = 0; i < 4; i++) {
                         if (gameCode.current && gameCode.current.children[i]) {
-                            gameCode.current.children[i].textContent = data.code.charAt(i);
-                            gameCode.current.children[i].classList.add("animate-pulse");
+                            gameCode.current.children[i].src = `/images/letters/${data.code.charAt(i)}.svg`;
+                            //gameCode.current.children[i].classList.add("animate-pulse");
                             gameCode.current.children[i].style.color = "#000000";
                         }
                     }
                 } else if (data.type === 'player_joined') {
-                    players[playerIndex[0]].current.style = "opacity: 100%";
-
-                    for (let child of players[playersJoined].current.children) {
-                        if (child.tagName === "H1") {
-                            child.textContent = data.name;
+                    const indx = playerIndex[0] + 1 - 1;
+                    setTimeout(() => {
+                        players[indx].current.style = "opacity: 100%";
+                        for (let child of players[indx].current.children) {
+                            if (child.tagName === "H1") {
+                                child.textContent = data.name;
+                            }
                         }
+                    }, 800)
+                    
+                    // when this occurs, animate the handOutstrechedRTef to move towards the player icon and then back down
+                    if (handPlacerRef.current) {
+                        const finalPos = {
+                            x: players[playerIndex[0]].current.getBoundingClientRect().left - 150,
+                            y: players[playerIndex[0]].current.getBoundingClientRect().bottom - 650,
+                        }
+
+                        handPlacerRef.current.style.left = `${finalPos.x}px`;
+                        handPlacerRef.current.style.bottom = `${-1000}px`;
+
+                        handPlacerRef.current.style.transition = "bottom 0.8s ease-out";
+                        handPlacerRef.current.style.bottom = `${finalPos.y}px`;
+
+                        
+                        setTimeout(() => {
+                            if (handPlacerRef.current) {
+                                handPlacerRef.current.style.bottom = `-1000px`;
+                            }
+                        }, 1000);
                     }
 
                     playerIndex.shift();
@@ -168,6 +197,22 @@ export default function Join() {
             window.location.href = `/play/playing?gameid=${encodeURIComponent(code)}`; // redirect to playing page
         }
 
+        React.useEffect(() => {
+            let c = [letterOne, letterTwo, letterThree, letterFour].map(ref => ref.current);
+
+            setInterval(() => {
+                for (let child of c) {
+                    if (child.src !== "" && child.src != null) {
+                        if (child.src.includes("letters/")) {
+                            child.src = child.src.replace("letters/", "letters2/");
+                        } else if (child.src.includes("letters2/")) {
+                            child.src = child.src.replace("letters2/", "letters/");
+                        }
+                    }
+                }
+            })
+        })
+
         return (
                 <div className={`min-h-screen w-full h-[100vh] bg-white overflow-hidden relative ${freckleFace.variable} overflow-y-hidden flex flex-col`}>
                         {/* Background */}
@@ -189,11 +234,13 @@ export default function Join() {
                                         </div>
                                         <div className="flex gap-2 lg:gap-4" ref={gameCode}>
                                                 {[...Array(4)].map((_, i) => (
-                                                        <div 
+                                                        <img 
                                                                 key={i}
-                                                                className="w-16 h-20 lg:w-20 lg:h-24 outline outline-2 outline-offset-[-1px] outline-black bg-white"
+                                                                className="w-16 h-20 lg:w-20 lg:h-24 outline-offset-[-1px]"
+                                                                ref={i === 0 ? letterOne : i === 1 ? letterTwo : i === 2 ? letterThree : letterFour}
                                                         />
                                                 ))}
+                                                <img src="/images/letters/smallbg.svg" className="absolute top-[75px] right-[0px] opacity-100 -z-10" />
                                         </div>
                                 </div>
                         </div>
@@ -215,6 +262,8 @@ export default function Join() {
                                         </span>
                                 </button>
                         </div>
+
+                        <img className="absolute bottom-[-1000px] left-0 w-[700px] rotate-[45deg]" src="/images/hand_outstreched.png" alt="hand" ref={handPlacerRef} />
                 </div>
         );
 }

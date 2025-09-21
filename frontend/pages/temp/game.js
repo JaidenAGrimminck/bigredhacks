@@ -351,7 +351,7 @@ export default function Game() {
         <>
             {state === 'wait' && <Wait />}
             {state === 'takephotos' && <PhotoGame websocket={() => { return socket; }} startTime={startTime} playerName={name} classifications={classifications} />}
-            { state === 'reelreview' && <ReelReview questions={reelQuestions} qref={questionsRef}/> }
+            { state === 'reelreview_resp' && <ReelReview questions={reelQuestions} qref={questionsRef}/> }
         </>
     );
 }

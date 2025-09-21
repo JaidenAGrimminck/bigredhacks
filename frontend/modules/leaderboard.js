@@ -15,7 +15,7 @@ export default function Leaderboard({ leaderboard, onFinish }) {
                     {leaderboard.map((entry, index) => (
                         <div key={index} className="flex flex-row justify-between w-96 px-4">
                             <span>{index + 1}. {entry.name}</span>
-                            <span>{entry.score} pt{entry.score === 1 ? '' : 's'}</span>
+                            <span>{entry.points} pt{entry.points === 1 ? '' : 's'}</span>
                         </div>
                     ))}
                 </div>

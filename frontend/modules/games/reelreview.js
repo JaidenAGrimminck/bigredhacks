@@ -116,6 +116,10 @@ export default function ReelReview({ websocket, reel, responses }) {
         if (state === 'watchphase') {
             setState('review');
             setStartTime(Date.now());
+            websocket.send(JSON.stringify({
+                type: "forward_state",
+                state: "reelreview_resp"
+            }))
         } else if (state === 'review') {
             setState('review_responses');
             websocket.send(JSON.stringify({
