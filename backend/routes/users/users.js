@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
+router.use(require('cookie-parser')());
 
 function setSessionCookie(res, sessionId) {
     const isProd = process.env.NODE_ENV === 'production'; //test if in production environment

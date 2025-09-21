@@ -96,7 +96,7 @@ function PeopleList({ people, points }) {
                         {points[index] || 0} pt{points[index] === 1 ? '' : 's'}
                     </span>
                     <div className="w-10 h-16 md:w-14 md:h-20 outline outline-4 outline-black bg-transparent" />
-                    <span className={`text-4xl md:text-6xl font-normal font-['Freckle_Face'] text-black transform ${person.rotation}`}>
+                    <span className={`text-4xl md:text-6xl font-normal font-['Freckle_Face'] text-black transform ${rotations[index % rotations.length]}`}>
                         {person}
                     </span>
                 </div>

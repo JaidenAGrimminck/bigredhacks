@@ -94,6 +94,39 @@ module.exports = (expressWs) => {
                 }
 
                 game.state = data.state;
+            } else if (data.type === 'get_reel') {
+                const game = GameManager.getGame(gcode);
+                if (game == null) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'Game not found',
+                    }));
+                    return;
+                }
+
+                ws.send(JSON.stringify({
+                    type: 'reel_data',
+                    reel: game.reel
+                }));
+            } else if (data.type === 'request_responses') {
+                const game = GameManager.getGame(gcode);
+                if (game == null) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'Game not found',
+                    }));
+                    return;
+                }
+                
+                console.log("Sending responses to players");
+                for (let player of game.players) {
+                    if (game.playerSockets[player]) {
+                        game.playerSockets[player].send(JSON.stringify({
+                            type: 'responses',
+                            responses: data.responses,
+                        }));
+                    }
+                }
             }
         });
 
@@ -207,6 +240,7 @@ module.exports = (expressWs) => {
                     type: 'leaderboard',
                     leaderboard: leaderboard,
                 }));
+            } else if (data.type === 'submit_reel_responses') {
             }
         });
         

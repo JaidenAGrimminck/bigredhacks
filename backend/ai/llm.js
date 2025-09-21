@@ -31,6 +31,23 @@ async function promptLLM(prompt) {
     });
 }
 
+async function reviewResponses(responses, reelDescription, questions) {
+    const prompt = `
+    You are an expert at reviewing and grading short text responses to open-ended questions.
+    Here's a description of an Instagram reel: "${reelDescription}"
+
+    Here are the questions asked: ${questions.map(q => `\n- ${q}`).join('')}
+
+    Here are the responses to review: ${responses.map(r => `\n- ${r}`).join('')}
+
+    For each one, grade them on the points (pts) provided in the question. If there was none provided, grade them out of 3 points.
+    Once you are done, provide ONLY the numeric score for each response, in the same order as the responses were provided, in a JSON array.
+    `
+
+    const result = await promptLLM(prompt);
+    return result;
+}
+
 async function generateListOfItems() {
     const prompt = `
     You are generating a list of 10 random items that players can find and take a photo of within a 5 minute time limit for a game called "TouchGrass!"
@@ -95,4 +112,4 @@ async function generateListOfItems() {
     }
 }
 
-module.exports = { promptLLM, generateListOfItems };
+module.exports = { promptLLM, generateListOfItems, reviewResponses };

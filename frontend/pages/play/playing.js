@@ -11,11 +11,12 @@ import INeed from "@/modules/games/ineed";
 import ReelReview from "@/modules/games/reelreview";
 
 export default function Playing() {
-    const testing = true;
+    const testing = false;
     let [websocket, setWebsocket] = useState(null);
     let [state, setState] = useState('intro'); // intro, countdown, leaderboard, play/ineed, play/reelreview
     let [leaderboard, setLeaderboard] = useState([]);
     let [gameStart, setGameStart] = useState(Date.now());
+    let [reel, setReel] = useState(null);
 
     const f = async () => {
         if (testing) return;
@@ -34,6 +35,10 @@ export default function Playing() {
             ws.send(JSON.stringify({ // reestablish connection as host
                 type: 'reestablish',
                 code,
+            }));
+
+            ws.send(JSON.stringify({
+                type: 'get_reel',
             }));
 
             setInterval(() => {
@@ -62,6 +67,8 @@ export default function Playing() {
                 }
             } else if (data.type === 'switch_to_game') {
                 setState(data.state);
+            } else if (data.type === 'reel_data') {
+                setReel(data.reel);
             }
         }
 
@@ -83,11 +90,11 @@ export default function Playing() {
             if (websocket) {
                 websocket.send(JSON.stringify({
                     type: 'forward_state',
-                    state: 'reelreview',
+                    state: 'takephotos',
                 }));
             }
 
-            setState('reelreview');
+            setState('takephotos');
         }
     }
 
@@ -96,7 +103,7 @@ export default function Playing() {
             {state === 'intro' && <Intro playerNames={["jaiden", "test", "abab", "ahliushfdlkasj"]} onFinish={nextState}/>}
             {state === 'countdown' && <Countdown onFinish={nextState} />}
             { state === 'takephotos' && <INeed leaderboard={leaderboard} gameStart={gameStart} />}
-            { state === 'reelreview' && <ReelReview leaderboard={leaderboard} gameStart={gameStart} />}
+            { state === 'reelreview' && <ReelReview websocket={websocket} leaderboard={leaderboard} gameStart={gameStart} reel={reel} /> }
         </div>
     );
 }

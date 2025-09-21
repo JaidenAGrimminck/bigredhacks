@@ -1,4 +1,5 @@
 const { generateListOfItems } = require("../ai/llm");
+const { getRandomReel } = require("./reels");
 
 function generateEasyCode() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -23,6 +24,8 @@ class Game {
         this.state = 'waiting';
 
         this.items = []; // list of items to find
+
+        this.reel = getRandomReel(); // get a random reel
     }
 
     async startGame() {

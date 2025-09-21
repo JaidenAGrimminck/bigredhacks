@@ -2,6 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 
+router.get('/', (req, res) => {
+    res.send('Games endpoint');
+});
+
 router.post('/join', (req, res) => {
     const { gameId, name } = req.body;
     const game = require('../../modules/Game').getGame(gameId);
@@ -27,6 +31,7 @@ router.post('/join', (req, res) => {
 router.post('/start', (req, res) => {
     const { gameId } = req.body;
     const game = require('../../modules/Game').getGame(gameId);
+
     if (!game) {
         return res.status(404).json({ error: 'Game not found' });
     }

@@ -10,7 +10,7 @@ export default function Home() {
     React.useEffect(() => {
         // check if iphone
         if (navigator.userAgent.match(/iPhone/i)) {
-            window.location.href = "/test/join";
+            window.location.href = "/temp/join";
         } else {
             window.location.href = "/dashboard";
         }

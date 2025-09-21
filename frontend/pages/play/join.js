@@ -53,7 +53,7 @@ export default function Join() {
         
         const letters = []; // TODO: handrawn letters A-Z
         
-        let code = ""; // game code
+        let [code, setCode] = React.useState("");
 
         let playersJoined = 0;
 
@@ -84,11 +84,11 @@ export default function Join() {
                 }
 
                 if (data.type === 'established') {
-                    code = data.code;
-                    console.log(`Game established with code: ${gameCode}`);
+                    setCode(data.code);
+                    console.log(`Game established with code: ${data.code}`);
                     for (let i = 0; i < 4; i++) {
                         if (gameCode.current && gameCode.current.children[i]) {
-                            gameCode.current.children[i].textContent = code.charAt(i);
+                            gameCode.current.children[i].textContent = data.code.charAt(i);
                             gameCode.current.children[i].classList.add("animate-pulse");
                             gameCode.current.children[i].style.color = "#000000";
                         }
@@ -146,10 +146,10 @@ export default function Join() {
         }, []);
 
         const startGame = async () => {
-            if (playersJoined < 1) {
-                alert("At least one player is required to start the game.");
-                return;
-            }
+            // if (playersJoined < 1) {
+            //     alert("At least one player is required to start the game.");
+            //     return;
+            // }
 
             const response = await fetch(`${API_BASE_URL}/games/start`, {
                 method: 'POST',
