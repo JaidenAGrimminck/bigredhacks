@@ -2,6 +2,7 @@ const express = require("express");
 const GameManager = require("../modules/Game");
 
 const consts = require("../consts");
+const YOLO_URL = process.env.YOLO_URL || "http://127.0.0.1:3333/detect";
 
 module.exports = (expressWs) => {
     const router = express.Router();
@@ -172,11 +173,15 @@ module.exports = (expressWs) => {
                 const name = pdata.name;
                 const photo = pdata.photo; // base64 encoded image
 
-                // PASS THIS TO THE DASHBoARD + PHOTO CLASSIFICATION ENDPOINT
+                const who = data.name || name;
+                const img = data.photo;
+                const yolo = await (await fetch(YOLO_URL, {
+                    method: "POST",
+                    headers: { "content-type": "application/json", "accept": "application/json" },
+                    body: JSON.stringify({ image: data.photo })
+                })).json();
+                ws.send(JSON.stringify({ type: "photo_result", name: data.name || name, yolo }));
                 console.log("Photo received from " + name);
-                
-                
-                
 
             } else if (data.type === 'leaderboard_request') {
                 const game = GameManager.getGame(gcode);
