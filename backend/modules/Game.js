@@ -64,6 +64,13 @@ class Game {
             }
         }
 
+        // just hard code for now
+        // if (!items.includes("water bottle")) { 
+        //     items[0] = "water bottle"; // ensure water bottle is always included
+        // }
+
+        // items[1] = "cornell carabiner"; // ensure Cornell carabiner is always included
+
         this.items = items;
 
         return items;

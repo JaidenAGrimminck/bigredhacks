@@ -213,7 +213,7 @@ export default function Join() {
         React.useEffect(() => {
             let c = [letterOne, letterTwo, letterThree, letterFour].map(ref => ref.current);
 
-            setInterval(() => {
+            const int = setInterval(() => {
                 for (let child of c) {
                     if (child.src !== "" && child.src != null) {
                         if (child.src.includes("letters/")) {
@@ -223,7 +223,8 @@ export default function Join() {
                         }
                     }
                 }
-            })
+            }, 100)
+            return () => clearInterval(int);
         })
 
         return (

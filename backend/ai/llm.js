@@ -18,11 +18,11 @@ async function promptLLM(prompt) {
         })
     })
     .then(response => response.json())
-    .then(data => {
+    .then(async (data) => {
         if (data.choices && data.choices.length > 0) {
             return data.choices[0].message.content;
         } else {
-            throw new Error("No choices returned from LLM");
+            return promptLLM(prompt); // try again
         }
     })
     .catch(error => {
@@ -105,7 +105,7 @@ async function generateListOfItems() {
         if (Array.isArray(items) && items.every(item => typeof item === 'string')) {
             return items;
         } else {
-            throw new Error("Response is not a valid array of 5 strings");
+            return await generateListOfItems(); // try again
         }
     } catch (error) {
         console.error("Error parsing LLM response:", error);

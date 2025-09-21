@@ -53,6 +53,10 @@ export default function Home() {
             credentials: 'include',
             redirect: 'follow'
         });
+
+        // remove cookie
+        document.cookie = "sessionID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        console.log("Signed out, redirecting to signin");
         
         window.location.href = "/signin";
     }
@@ -66,9 +70,9 @@ export default function Home() {
             <div className="w-[474px] text-center justify-center text-black text-6xl font-normal font-['Freckle_Face'] mb-[20px]">
                 <img src="/logo.png" alt="Logo" className="mx-auto" />
             </div>
-            <div className="w-[553px] h-28 bg-zinc-300 rounded-[60px] flex items-center justify-center mb-10 hover:bg-zinc-400 cursor-pointer transition-colors duration-300">
+            {/* <div className="w-[553px] h-28 bg-zinc-300 rounded-[60px] flex items-center justify-center mb-10 hover:bg-zinc-400 cursor-pointer transition-colors duration-300">
                 <div className="w-[553px] text-center justify-center text-black text-6xl font-normal font-['Freckle_Face']">How To Play</div>
-            </div>
+            </div> */}
             <div className="w-[553px] h-28 bg-zinc-300 rounded-[60px] flex items-center justify-center mb-10 hover:bg-zinc-400 cursor-pointer transition-colors duration-300">
                 <div className="w-[553px] text-center justify-center text-black text-6xl font-normal font-['Freckle_Face']" onClick={startGame}>Start New Game</div>
             </div>

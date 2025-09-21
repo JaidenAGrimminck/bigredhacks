@@ -292,11 +292,12 @@ module.exports = (expressWs) => {
                     }
                     return d;
                 })
-                
+
+                const gitems = game.items.map(i => i.toLowerCase());
 
                 for (let detection of yolo.detections) {
                     const playerDetectedefore = game.detectedItems[name] || [];
-                    if (game.items.includes(detection.class_name) && !playerDetectedefore.includes(detection.class_name)) {
+                    if (gitems.includes(detection.class_name) && !playerDetectedefore.includes(detection.class_name)) {
                         game.points[name] = (game.points[name] || 0) + consts.POINTS_PER_ITEM + (!game.previouslyFoundItems.includes(detection.class_name) ? 1 : 0);
                         if (!game.detectedItems[name]) {
                             game.detectedItems[name] = [];
