@@ -23,7 +23,9 @@ class Game {
         this.code = generateEasyCode(); // 4 letter code for joining the game
         this.state = 'waiting';
 
-        this.items = []; // list of items to find
+        this.detectedItems = {}; // map of player name to list of detected items
+
+        this.items = ["fountain", "statue", "tree", "chair", "couch"]; // list of items to find
 
         this.reel = getRandomReel(); // get a random reel
     }

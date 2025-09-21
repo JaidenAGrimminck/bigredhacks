@@ -23,6 +23,7 @@ export default function SignUp() {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
+                            "X-Session-ID": document.cookie.split('; ').find(row => row.startsWith('sessionID=')).split('=')[1],
                         },
                         credentials: 'include',
                         redirect: 'follow'
@@ -64,6 +65,10 @@ export default function SignUp() {
         })
 
         if (req.status === 200 || req.status === 201) {
+            let sessionID = (await req.json()).sessionID;
+
+            document.cookie = `sessionID=${sessionID}; path=/; SameSite=Lax`;
+            
             window.location.href = "/dashboard";
         } else {
             alert("Error signing up");

@@ -20,17 +20,21 @@ export default function SignIn() {
                 const res = await fetch(`${API_BASE_URL}/users/me`, {
                     method: "GET",
                     headers: {
+                        //sessionID
+                        "X-Session-ID": document.cookie.split('; ').find(row => row.startsWith('sessionID=')).split('=')[1],
                         "Content-Type": "application/json",
                     },
                     credentials: 'include',
                     redirect: 'follow'
                 });
                 isLoggedIn = res.status === 200 || res.status === 201;
+                
             }
             catch (error) {
                 isLoggedIn = false;
                 console.log(error)
             }
+
 
             if (isLoggedIn) {
                 window.location.href = "/dashboard";
@@ -59,7 +63,13 @@ export default function SignIn() {
             body: JSON.stringify({ email }),
         })
 
+        
+
         if (req.status === 200 || req.status === 201) {
+            let sessionID = (await req.json()).sessionID;
+
+            document.cookie = `sessionID=${sessionID}; path=/; SameSite=Lax`;
+
             window.location.href = "/dashboard";
         } else {
             alert("Error signing in");

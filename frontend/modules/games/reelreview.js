@@ -109,7 +109,7 @@ function Review({ onFinish, startTime }) {
 
 
 export default function ReelReview({ websocket, reel, responses }) {
-    let [state, setState] = React.useState('review'); // watchphase, voting, results
+    let [state, setState] = React.useState('watchphase'); // watchphase, voting, results
     let [startTime, setStartTime] = React.useState(Date.now());
 
     const changeState = () => {
@@ -129,7 +129,7 @@ export default function ReelReview({ websocket, reel, responses }) {
         <>
         <div className="w-[100vw] h-[100vh] bg-white overflow-hidden flex flex-col justify-center text-left text-5xl text-black font-['Freckle_Face']">
             <img className="w-[100vw] h-[100vh]" src="/images/movie.jpg" />
-            {state === 'watchphase' && <WatchPhase url={reel.reel} onFinish={changeState} />}
+            {state === 'watchphase' && <WatchPhase url={reel !== null ? reel.reel : null} onFinish={changeState} />}
             { state === 'review' && <Review onFinish={changeState} startTime={startTime} />}
         </div>
         </>

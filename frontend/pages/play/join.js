@@ -155,6 +155,7 @@ export default function Join() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    "X-Session-ID": document.cookie.split('; ').find(row => row.startsWith('sessionID=')).split('=')[1],
                 },
                 body: JSON.stringify({ gameId: code }),
             });
@@ -172,7 +173,7 @@ export default function Join() {
                         {/* Background */}
                         <img 
                                 className="absolute inset-0 w-full h-full object-cover" 
-                                src="/images/beach.jpg" 
+                                src="/images/beachbg.gif" 
                                 alt="Beach background"
                         />
                         

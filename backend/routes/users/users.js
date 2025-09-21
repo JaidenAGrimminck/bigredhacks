@@ -25,7 +25,7 @@ router.use(async (req, res, next) => {
     if (req.headers == undefined) {
         req.headers = {};
     }
-    const sessionId = req.headers["x-session-id"] || req.cookies.sessionId;
+    const sessionId = req.headers["X-Session-ID"] || req.headers["x-session-id"] || req.cookies.sessionId;
     if (sessionId) {
         const user = await MongoDBClient.getUserBySessionId(sessionId);
         if (user) {
@@ -69,7 +69,7 @@ router.post("/signin", async (req, res) => {
         console.log("Cookie is not set correctly");
     }
 
-    res.json({ success: true });
+    res.json({ success: true, sessionID: sessionId });
 });
 
 router.get("/me", (req, res) => {
@@ -119,7 +119,7 @@ router.post("/signup", async (req, res) => {
 
     setSessionCookie(res, sessionId);
 
-    res.json({ success: true });
+    res.json({ success: true, sessionID: sessionId });
 });
 
 module.exports = router;

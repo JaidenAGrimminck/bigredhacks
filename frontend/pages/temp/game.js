@@ -21,7 +21,7 @@ function Wait() {
     );
 }
 
-function PhotoGame({ websocket, startTime, playerName }) {
+function PhotoGame({ websocket, startTime, playerName, classifications }) {
     const videoPhotoRef = React.useRef(null);
     const galleryRef = React.useRef(null);
     const timerRef = React.useRef(null);
@@ -126,12 +126,12 @@ function PhotoGame({ websocket, startTime, playerName }) {
         return () => clearInterval(interval);
     }, [startTime]);
 
-    function GalleryItem({ photo }) {
+    function GalleryItem({ photo, classification={correct: false, item: '', photo: ''} }) {
         return (
             <div className="flex flex-col justify-center items-center border border-black p-4 m-2 bg-white">
                 <img src={photo} className="w-60 h-48 object-cover border border-black" />
 
-                <h1 className="text-black font-['Freckle_Face']">Classified as: <span className="text-red">Cat</span></h1>
+                <h1 className="text-black font-['Freckle_Face']">Classified as: <span style={{ color: classification.correct ? 'green' : 'red' }}>{ classification.item == "" ? "I'm thinking..." : classification.item }</span></h1>
             </div>
         );
     }
@@ -145,7 +145,8 @@ function PhotoGame({ websocket, startTime, playerName }) {
             websocket().send(JSON.stringify({
                 type: 'photo',
                 photo: dataURL,
-                name: playerName
+                name: playerName,
+                id: photosTaken.length,
             }));
         }
     }
@@ -170,7 +171,8 @@ function PhotoGame({ websocket, startTime, playerName }) {
                 websocket().send(JSON.stringify({
                     type: 'photo',
                     photo: reader.result,
-                    name: playerName
+                    name: playerName,
+                    id: photosTaken.length,
                 }));
             }
         }
@@ -194,7 +196,7 @@ function PhotoGame({ websocket, startTime, playerName }) {
                     {
                         onMobile && 
                         <div>
-                        <input type="file" accept="image/*" capture="camera" className="bg-white w-[90vw] text-center text-[20px] p-2 rounded" onChange={handleFileChange} />
+                        <input type="file" accept="image/png" capture="camera" className="bg-white w-[90vw] text-center text-[20px] p-2 rounded" onChange={handleFileChange} />
                         </div>
                     }
                     <button className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 active:bg-blue-700 mt-4 font-['Freckle_Face']" onClick={swapToGallery}>See Gallery</button>
@@ -204,7 +206,7 @@ function PhotoGame({ websocket, startTime, playerName }) {
                 <div className="flex flex-row items-center mt-4 w-[100vw] overflow-x-scroll">
                     {photosTaken.length === 0 && <h1 className="text-white font-['Freckle_Face']">No photos taken yet.</h1>}
                     {photosTaken.map((photo, index) => (
-                        <GalleryItem photo={photo} key={index} />
+                        <GalleryItem photo={photo} key={index} classification={classifications.find(cls => cls.id === index)} />
                     ))}
                 </div>
                 <div className="text-white font-['Freckle_Face'] mt-4">Scroll to see more</div>
@@ -240,6 +242,20 @@ export default function Game() {
 
     let [socket, setSocket] = React.useState(null);
     let [name, setName] = React.useState("");
+    let [classifications, setClassifications] = React.useState([]);
+    let [startTime, setStartTime] = React.useState(Date.now());
+    let [reelQuestions, setReelQuestions] = React.useState([
+        "What is the main theme of the reel?",
+        "Describe the setting of the reel.",
+        "Who are the main characters in the reel?",
+        "What is the conflict or problem presented in the reel?",
+        "How is the conflict resolved?",
+        "What emotions did the reel evoke?",
+        "What was your favorite part of the reel and why?",
+        "Did you notice any symbols or motifs in the reel? If so, what do you think they represent?",
+        "How does the reel relate to real-life situations or experiences?",
+        "What message or lesson do you think the reel is trying to convey?"
+    ]);
 
     let questionsRef = React.useRef(null);
 
@@ -250,8 +266,7 @@ export default function Game() {
         const searchParams = new URLSearchParams(window.location.search);
 
         const gameID = searchParams.get('gameid');
-        const userID = searchParams.get('userid');
-
+        const userID = decodeURIComponent(searchParams.get('userid'));
         
         // validate gameID and userID here
         if (!gameID || !userID) {
@@ -293,6 +308,7 @@ export default function Game() {
             } else if (data.type === 'switch_to_game') {
                 setState(data.state)
                 console.log("Switching to game state: " + data.state);
+                setStartTime(Date.now());
             } else if (data.type === 'get_reel_responses') {
                 if (questionsRef.current) {
                     let answers = [];
@@ -306,6 +322,19 @@ export default function Game() {
                         answers,
                     }));
                 }
+            } else if (data.type === 'detection') {
+                const cls = {
+                    correct: data.correct,
+                    item: data.item,
+                    id: data.id,
+                }
+
+                console.log(cls)
+                setClassifications(old => [...old, cls]);
+            } else if (data.type === 'update_time') {
+                setStartTime(data.startTime);
+            } else if (data.type === 'reel_questions') {
+                setReelQuestions(data.questions);
             }
         }
         
@@ -317,24 +346,12 @@ export default function Game() {
     React.useEffect(() => {
         f();
     }, []);
-        
 
     return (
         <>
             {state === 'wait' && <Wait />}
-            {state === 'takephotos' && <PhotoGame websocket={() => { return socket; }} startTime={Date.now()} playerName={name} />}
-            { state === 'reelreview' && <ReelReview questions={[
-                "What is the main theme of the reel?",
-                "Describe the setting of the reel.",
-                "Who are the main characters in the reel?",
-                "What is the conflict or problem presented in the reel?",
-                "How is the conflict resolved?",
-                "What emotions did the reel evoke?",
-                "What was your favorite part of the reel and why?",
-                "Did you notice any symbols or motifs in the reel? If so, what do you think they represent?",
-                "How does the reel relate to real-life situations or experiences?",
-                "What message or lesson do you think the reel is trying to convey?"
-            ]} qref={questionsRef}/> }
+            {state === 'takephotos' && <PhotoGame websocket={() => { return socket; }} startTime={startTime} playerName={name} classifications={classifications} />}
+            { state === 'reelreview' && <ReelReview questions={reelQuestions} qref={questionsRef}/> }
         </>
     );
 }

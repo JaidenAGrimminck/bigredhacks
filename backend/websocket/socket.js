@@ -2,7 +2,7 @@ const express = require("express");
 const GameManager = require("../modules/Game");
 
 const consts = require("../consts");
-const YOLO_URL = process.env.YOLO_URL || "http://127.0.0.1:3333/detect";
+const YOLO_URL = "http://localhost:3333/detect";
 
 module.exports = (expressWs) => {
     const router = express.Router();
@@ -104,10 +104,23 @@ module.exports = (expressWs) => {
                     return;
                 }
 
+                console.log("sending reel to host ", game.reel);
+
                 ws.send(JSON.stringify({
                     type: 'reel_data',
                     reel: game.reel
                 }));
+
+                setTimeout(() => {
+                    for (let player of game.players) {
+                        if (game.playerSockets[player]) {
+                            game.playerSockets[player].send(JSON.stringify({
+                                type: 'reel_questions',
+                                questions: game.reel.questions,
+                            }));
+                        }
+                    }
+                }, 5000);
             } else if (data.type === 'request_responses') {
                 const game = GameManager.getGame(gcode);
                 if (game == null) {
@@ -124,6 +137,24 @@ module.exports = (expressWs) => {
                         game.playerSockets[player].send(JSON.stringify({
                             type: 'responses',
                             responses: data.responses,
+                        }));
+                    }
+                }
+            } else if (data.type === 'time_update') {
+                const game = GameManager.getGame(gcode);
+                if (game == null) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'Game not found',
+                    }));
+                    return;
+                }
+                
+                for (let player of game.players) {
+                    if (game.playerSockets[player]) {
+                        game.playerSockets[player].send(JSON.stringify({
+                            type: 'update_time',
+                            startTime: data.startTime,
                         }));
                     }
                 }
@@ -205,16 +236,67 @@ module.exports = (expressWs) => {
 
                 const name = pdata.name;
                 const photo = pdata.photo; // base64 encoded image
+                const id = pdata.id; // unique id for the photo
 
-                const who = data.name || name;
-                const img = data.photo;
                 const yolo = await (await fetch(YOLO_URL, {
                     method: "POST",
                     headers: { "content-type": "application/json", "accept": "application/json" },
-                    body: JSON.stringify({ image: data.photo })
+                    body: JSON.stringify({ data_url: photo })
                 })).json();
-                ws.send(JSON.stringify({ type: "photo_result", name: data.name || name, yolo }));
-                console.log("Photo received from " + name);
+
+                console.log(yolo);
+
+                ws.send(JSON.stringify({ type: "photo_result", name, yolo }));
+
+                const game = GameManager.getGame(gcode);
+                if (game == null) {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        message: 'Game not found',
+                    }));
+                    return;
+                }
+                
+                yolo.detections = yolo.detections.map(d => {
+                    d.class_name = d.class_name.toLowerCase();
+                    return d;
+                })
+                
+
+                for (let detection of yolo.detections) {
+                    const playerDetectedefore = game.detectedItems[name] || [];
+                    if (game.items.includes(detection.class_name) && !playerDetectedefore.includes(detection.class_name)) {
+                        game.points[name] = (game.points[name] || 0) + consts.POINTS_PER_ITEM;
+                        if (!game.detectedItems[name]) {
+                            game.detectedItems[name] = [];
+                        }
+                        game.detectedItems[name].push(detection.class_name);
+
+                        console.log(`Player ${name} detected item ${detection.class_name} (+${consts.POINTS_PER_ITEM} points)`);
+
+                    
+                        ws.send(JSON.stringify({
+                            type: 'detection',
+                            name: name,
+                            item: detection.class_name,
+                            correct: true,
+                            id,
+                        }));
+                        
+                        return;
+                    }
+                }
+
+                
+                ws.send(JSON.stringify({
+                    type: 'detection',
+                    name: name,
+                    item: yolo.detections.length > 0 ? yolo.detections[0].class_name : "????",
+                    correct: false,
+                    id,
+                }));
+
+                console.log("Photo received from " + name + " (photo indx " + id + ")");
 
             } else if (data.type === 'leaderboard_request') {
                 const game = GameManager.getGame(gcode);

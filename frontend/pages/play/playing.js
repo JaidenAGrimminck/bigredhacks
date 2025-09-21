@@ -9,6 +9,7 @@ import Intro from "@/modules/intro";
 import { useState } from "react";
 import INeed from "@/modules/games/ineed";
 import ReelReview from "@/modules/games/reelreview";
+import Leaderboard from "@/modules/leaderboard";
 
 export default function Playing() {
     const testing = false;
@@ -68,6 +69,7 @@ export default function Playing() {
             } else if (data.type === 'switch_to_game') {
                 setState(data.state);
             } else if (data.type === 'reel_data') {
+                console.log(data.reel)
                 setReel(data.reel);
             }
         }
@@ -93,16 +95,62 @@ export default function Playing() {
                     state: 'takephotos',
                 }));
             }
-
+            
+            setGameStart(Date.now());
             setState('takephotos');
+        } else if (state === 'takephotos') {
+            if (websocket) {
+                websocket.send(JSON.stringify({
+                    type: 'forward_state',
+                    state: 'leaderboard',
+                }));
+            }
+            setState('leaderboard');
+        } else if (state === 'leaderboard') {
+            if (websocket) {
+                websocket.send(JSON.stringify({
+                    type: 'forward_state',
+                    state: 'reelreview',
+                }));
+            }
+            setState('reelreview');
+        } else if (state === 'reelreview') {
+            if (websocket) {
+                websocket.send(JSON.stringify({
+                    type: 'forward_state',
+                    state: 'TODO', // TODO MEEEEEEE
+                }));
+            }
+            //setState('TODO'); // TODO MEEEEEEE
         }
     }
+
+    React.useEffect(() => {
+        if (testing) return;
+        if (state !== 'takephotos') return;
+        if (!websocket) return;
+
+        let intv = setInterval(() => {
+            if (state !== 'takephotos') {
+                clearInterval(intv);
+                return;
+            }
+
+            websocket.send(JSON.stringify({
+                type: 'time_update',
+                startTime: gameStart,
+            }))
+        }, 10000)
+
+        return () => clearInterval(intv);
+    }, [state, websocket, gameStart]);
 
     return (
         <div>
             {state === 'intro' && <Intro playerNames={["jaiden", "test", "abab", "ahliushfdlkasj"]} onFinish={nextState}/>}
             {state === 'countdown' && <Countdown onFinish={nextState} />}
-            { state === 'takephotos' && <INeed leaderboard={leaderboard} gameStart={gameStart} />}
+            { state === 'takephotos' && <INeed leaderboard={leaderboard} gameStart={gameStart} onFinish={nextState} />}
+            { state === 'leaderboard' && <Leaderboard leaderboard={leaderboard} onFinish={nextState}/> }
             { state === 'reelreview' && <ReelReview websocket={websocket} leaderboard={leaderboard} gameStart={gameStart} reel={reel} /> }
         </div>
     );

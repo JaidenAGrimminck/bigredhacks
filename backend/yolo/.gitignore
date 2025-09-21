@@ -1,0 +1,5 @@
+__pycache__
+
+*.pt
+yolo11x.pt
+yolov7x-oiv7.pt

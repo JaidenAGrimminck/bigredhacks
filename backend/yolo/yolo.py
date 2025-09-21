@@ -7,7 +7,7 @@ import torch
 from ultralytics import YOLO
 
 # ---- Config ----
-MODEL_PATH   = os.getenv("YOLO_WEIGHTS", "yolov8n.pt")   # e.g., 'yolov8s.pt'
+MODEL_PATH   = os.getenv("YOLO_WEIGHTS", "yolov8x-oiv7.pt")   # e.g., 'yolov8s.pt'
 DEVICE       = os.getenv("YOLO_DEVICE", "cpu")           # 'cuda' if available
 DEFAULT_CONF = float(os.getenv("YOLO_CONF", 0.5))        # confidence threshold
 MAX_BYTES    = 20 * 1024 * 1024                          # 20MB guard for decoded image

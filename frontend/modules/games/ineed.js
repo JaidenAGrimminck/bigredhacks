@@ -9,17 +9,25 @@ const freckleFace = Freckle_Face({
 });
 
 // Header Component
-function GameHeader({ initialTime}) {
+function GameHeader({ initialTime, onFinish }) {
     const timerRef = React.useRef(null);
+    const maxTime = 8 * 1000;//5 * 60 * 1000; // 5 minutes in milliseconds alt: 
 
     React.useEffect(() => {
         const updateTimer = () => {
             if (timerRef.current) {
                 const elapsed = Date.now() - initialTime;
-                const remaining = Math.max(0, 5 * 60 * 1000 - elapsed);
+                const remaining = Math.max(0, maxTime - elapsed);
                 const minutes = Math.floor(remaining / (60 * 1000));
                 const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
                 timerRef.current.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                if (remaining <= 0) {
+                    // Time's up, trigger onFinish
+                    if (typeof onFinish === 'function') {
+                        onFinish();
+                    }
+                }
             }
         }
 
@@ -151,7 +159,7 @@ function MysteryItem() {
 }
 
 // Main Component
-export default function INeed({ leaderboard, gameStart }) {
+export default function INeed({ leaderboard, gameStart, onFinish }) {
     const [people, setPeople] = React.useState(["Smith", "John", "Emily", "Martin"]);
     const [points, setPoints] = React.useState([3, 5, 2, 4]);
 
@@ -164,7 +172,7 @@ export default function INeed({ leaderboard, gameStart }) {
     return (
         <div className={`min-h-screen bg-white p-4 ${freckleFace.variable}`}>
             <div className="max-w-7xl mx-auto">
-                <GameHeader initialTime={gameStart}/>
+                <GameHeader initialTime={gameStart} onFinish={onFinish} />
                 
                 <div className="flex flex-row gap-8 justify-around flex-wrap">
 

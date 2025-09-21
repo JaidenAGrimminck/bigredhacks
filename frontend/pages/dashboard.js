@@ -18,6 +18,7 @@ export default function Home() {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                "X-Session-ID": document.cookie.split('; ').find(row => row.startsWith('sessionID=')).split('=')[1],
             },
             credentials: 'include',
             redirect: 'follow'

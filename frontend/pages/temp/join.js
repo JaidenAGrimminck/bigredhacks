@@ -33,7 +33,9 @@ export default function Join() {
             body: JSON.stringify({ gameId, name: userId }),
         });
         if (!res.ok) {
-            throw new Error("Failed to join game");
+            //throw new Error("Failed to join game");
+            alert("Failed to join game. Please check the Game ID and try again.");
+            return;
         }
         // Handle successful join (e.g., redirect to game page)
         window.location.href = `/temp/game?gameid=${encodeURIComponent(gameId)}&userid=${encodeURIComponent(userId)}`; // redirect to waiting page

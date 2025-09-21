@@ -11,6 +11,14 @@ const reels = [
 
 module.exports = {
     getRandomReel() {
-        return reels[Math.floor(Math.random() * reels.length)];
+        const randomReel = reels[Math.floor(Math.random() * reels.length)];
+
+        randomReel.questions = [
+            "(1pt) NAME",
+            "(1pt) DATE",
+            ...randomReel.questions
+        ]
+
+        return randomReel;
     }
 };
