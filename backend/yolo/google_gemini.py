@@ -8,7 +8,7 @@ from google.genai import types
 MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 MAX_INLINE_BYTES = 20 * 1024 * 1024  # ~20MB inline limit for data URLs
 
-client = genai.Client(api_key="AIzaSyBbQcOkmejzywJdZmDIv-PWvfAjRmoy1SE")
+client = genai.Client(api_key="[OLD KEY DEPRECATED, use GOOGLE_API_KEY env var]")
 app = Flask(__name__)
 
 def _parse_data_url(data_url: str) -> tuple[str, bytes]:

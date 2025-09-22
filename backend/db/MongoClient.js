@@ -1,7 +1,7 @@
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 // TODO: replace w/ .env variable later
-const uri = "mongodb+srv://jg2575_db_user:2XWzAP9uQJv56FYZ@cluter0.ngxefxi.mongodb.net/?retryWrites=true&w=majority&appName=Cluter0";
+const uri = "[API KEY (OLD WAS DELETED)]";
 
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
