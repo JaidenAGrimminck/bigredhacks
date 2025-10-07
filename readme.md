@@ -1,3 +1,6 @@
+> [!NOTE]
+> This was made for the BigRedHacks 2025 hackathon. This won the MLH MongoDB track - see our [devpost here](https://devpost.com/software/touch-grass-hy8k4c)!
+
 ## Inspiration
 Our inspiration was the studio “Jackbox Games,” known for games such as Quiplash or Murder Mystery. We took their premise of one computer displaying the game screen and people playing on their phones, and extended it further, really forcing people to get up, be quick on their feet, fast with their writing, and maybe touch some grass in the process.
 
